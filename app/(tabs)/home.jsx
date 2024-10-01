@@ -31,7 +31,7 @@ export default function Home() {
           <Text style={{ fontFamily: "outfit", fontSize: 18, textAlign: "center", marginTop: 10, width: width * 0.8 }}>
             Sumate a adoptar una mascota, darle un hogar y hacerla feliz.
           </Text>
-          <Link href="/(tabs)/explore" asChild>
+          <Link href="/(tabs)/find" asChild>
             <Pressable
               onPressIn={() => setIsPressed(true)}
               onPressOut={() => setIsPressed(false)}

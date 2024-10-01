@@ -1,14 +1,48 @@
 import { View, Text } from "react-native";
 import React from "react";
-import { Tabs } from 'expo-router'
-
+import { Tabs } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import Colors from "../../constants/Colors";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{headerShown:false}}>
-      <Tabs.Screen name="home" options={{tabBarStyle: { display: 'none' }}} />
-      <Tabs.Screen name="explore" />
-      <Tabs.Screen name="profile" />
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarInactiveTintColor: Colors.text.disabled,
+        tabBarActiveTintColor: Colors.secondary.main
+      }}
+    >
+      {/* <Tabs.Screen name="home" options={{title:'Home',tabBarStyle: { display: 'none' } , tabBarIcon:() => <Ionicons name="home" size={24} color={Colors.secondary.contrastText} />}} /> */}
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="find"
+        options={{
+          title: "Encontrar",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="pets" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="likes"
+        options={{
+          title: "Interesados",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="heart" size={28} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
