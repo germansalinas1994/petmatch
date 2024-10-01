@@ -4,7 +4,7 @@ import React from 'react'
 export default function profile() {
   return (
     <View>
-      <Text>profile</Text>
+      <Text style={{textAlign:'center', fontSize:30, marginTop:50}}>profile</Text>
     </View>
   )
 }
