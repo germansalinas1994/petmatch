@@ -9,6 +9,7 @@ export default function Home() {
   const { width, height } = Dimensions.get("window");
   const insets = useSafeAreaInsets(); // Obtener los insets de safe area
 
+
   return (
     <View
       style={{
