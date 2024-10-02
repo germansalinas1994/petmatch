@@ -2,32 +2,26 @@ import { View, StyleSheet, FlatList, Text, Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import Colors from "../../constants/Colors";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../config/FirebaseConfig";
-import { getFirestore, collection, getDocs } from "firebase/firestore"; 
-
-
-
+import { collection, onSnapshot } from "firebase/firestore";
 
 export default function Likes() {
   const [users, setUsers] = useState([]);
 
-  // Function to fetch users from Firebase
-  const fetchUsers = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "users"));
-      const usersList = querySnapshot.docs.map(doc => ({
+  useEffect(() => {
+    // Usar onSnapshot para escuchar cambios en tiempo real en la colección "users"
+    const usersCollection = collection(db, "users");
+    const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
+      const usersList = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setUsers(usersList);
-    } catch (error) {
-      console.error("Error al encontrar los usuarios: ", error);
-    }
-  };
+    });
 
-  useEffect(() => {
-    fetchUsers();
+    // Cleanup: Desuscribirse de los cambios cuando el componente se desmonte
+    return () => unsubscribe();
   }, []);
 
   const renderUserItem = ({ item }) => (
@@ -50,13 +44,12 @@ export default function Likes() {
 }
 
 const styles = StyleSheet.create({
- 
   userCard: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 10,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   profileImage: {
     width: 50,
@@ -66,6 +59,6 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
