@@ -8,13 +8,14 @@ export default {
     paper: "#FFFFFF", // Color for cards or modals
     dark: "#643131", // Dark color for background
     primaryButton: "#A68B76", // Primary color for buttons
-    secondaryButton: "#FBEADD"
+    secondaryButton: "#FBEADD",
+    clearGray: "#F5F5F5",
 
   },
   text: {
     primary: "#000000", // Black
     secondary: "#643131", // Secondary color for text
-    disabled: "#D9D9D9", // Disabled text style
+    disabled: "#A9A9A9", // Disabled text style
     hint: "#FFF0E5", // Light hint text
     clear: "#D9D9D9", // Clear text
     white: "#FFFFFF", // White text
