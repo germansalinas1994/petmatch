@@ -1,15 +1,13 @@
 {
   "expo": {
     "name": "petmatch",
-    "slug": "petmatch",
+    "slug": "petmach",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      // "image": "./assets/images/splash.png",
-      // "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -31,6 +29,18 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9bc6ac50-0b8d-423d-b55f-753bf8bb020c"
+      }
+    },
+    "owner": "gsalinas1994",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9bc6ac50-0b8d-423d-b55f-753bf8bb020c"
     }
   }
 }
