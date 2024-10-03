@@ -1,6 +1,6 @@
 // Likes.tsx
-import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Header from "../../components/Header";
 import { db } from "../../config/FirebaseConfig";
 import { collection, onSnapshot, DocumentData } from "firebase/firestore";
@@ -8,6 +8,7 @@ import { Image } from 'react-native-expo-image-cache';
 import DataList from '../../components/DataList';
 import SkeletonItem from '../../components/SkeletonItem';
 import Colors from '../../constants/Colors';
+import UserModal from '@/components/UserModal';
 
 type User = {
   id: string;
@@ -16,6 +17,9 @@ type User = {
 };
 
 export default function Likes() {
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
   const fetchUsers = (): Promise<User[]> => {
     return new Promise((resolve) => {
       const usersCollection = collection(db, "users");
@@ -33,6 +37,17 @@ export default function Likes() {
     });
   };
 
+  const openModal = (user: User) => {
+    setSelectedUser(user);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedUser(null);
+  };
+
+
   const renderSkeleton = () => (
     <View style={styles.userCard}>
       <SkeletonItem width={50} height={50} borderRadius={25} style={styles.skeletonImage} />
@@ -41,10 +56,12 @@ export default function Likes() {
   );
 
   const renderUserItem = ({ item }: { item: User }) => (
-    <View style={styles.userCard}>
-      <Image uri={item.imagen} style={styles.profileImage} />
-      <Text style={styles.userName}>{item.nombre}</Text>
-    </View>
+    <TouchableOpacity onPress={() => openModal(item)}>
+      <View style={styles.userCard}>
+        <Image uri={item.imagen} style={styles.profileImage} />
+        <Text style={styles.userName}>{item.nombre}</Text>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -55,6 +72,11 @@ export default function Likes() {
         renderItem={renderUserItem}
         renderSkeleton={renderSkeleton}
         itemKeyExtractor={(item) => item.id}
+      />
+      <UserModal 
+        visible={modalVisible} 
+        onClose={closeModal} 
+        user={selectedUser} 
       />
     </View>
   );
