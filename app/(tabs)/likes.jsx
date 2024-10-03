@@ -4,47 +4,56 @@ import Header from "../../components/Header";
 import Colors from "../../constants/Colors";
 import { db } from "../../config/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
-import Loading from "../../components/Loading";
 import { Image } from 'react-native-expo-image-cache';
-
+import { MotiView } from 'moti';
 
 export default function Likes() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // Set loading to true on component mount
-
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    
-    // Usar onSnapshot para escuchar cambios en tiempo real en la colección "users"
     const usersCollection = collection(db, "users");
     const suscriber = onSnapshot(usersCollection, (snapshot) => {
       const usersList = snapshot.docs.map((doc) => ({
         id: doc.id,
-        // los tres puntos son el spread operator, se usa para copiar las propiedades de un objeto a otro
-        ...doc.data(),
-
-        // tambien podria hacerse asi
+        ...doc.data()
+        
+        // tambien puede hacerse asi
         // id: doc.id,
         // nombre: doc.data().nombre,
         // imagen: doc.data().imagen
-
       }));
       setUsers(usersList);
       setLoading(false);
-
     });
 
-    // Cleanup: Desuscribirse de los cambios cuando el componente se desmonte
     return () => suscriber();
   }, []);
 
-
-  if (loading) {
-
-    return <Loading />;
-  }
-
+  const renderSkeleton = () => (
+    <View style={styles.userCard}>
+      <MotiView
+        style={[styles.profileImage, styles.skeleton]}
+        from={{ opacity: 0.3 }}
+        animate={{ opacity: 1 }}
+        transition={{
+          type: 'timing',
+          duration: 800,
+          loop: true,
+        }}
+      />
+      <MotiView
+        style={[styles.userNameSkeleton, styles.skeleton]}
+        from={{ opacity: 0.3 }}
+        animate={{ opacity: 1 }}
+        transition={{
+          type: 'timing',
+          duration: 800,
+          loop: true,
+        }}
+      />
+    </View>
+  );
 
   const renderUserItem = ({ item }) => (
     <View style={styles.userCard}>
@@ -59,12 +68,21 @@ export default function Likes() {
   return (
     <View>
       <Header />
-      <FlatList
-        data={users}
-        renderItem={renderUserItem}
-        keyExtractor={(item) => item.id}
-        initialNumToRender={10}
-      />
+      {loading ? (
+        // Renderiza algunos skeletons mientras carga
+        <FlatList
+          data={Array(10).fill({})} // Puedes ajustar la cantidad de skeletons
+          renderItem={renderSkeleton}
+          keyExtractor={(_, index) => index.toString()}
+        />
+      ) : (
+        <FlatList
+          data={users}
+          renderItem={renderUserItem}
+          keyExtractor={(item) => item.id}
+          initialNumToRender={10}
+        />
+      )}
     </View>
   );
 }
@@ -86,5 +104,14 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  skeleton: {
+    backgroundColor: Colors.skeleton // Color gris para el efecto de carga
+  },
+  userNameSkeleton: {
+    width: 100, // Ajusta el ancho del skeleton
+    height: 20,
+    borderRadius: 5,
+    marginLeft: 10,
   },
 });

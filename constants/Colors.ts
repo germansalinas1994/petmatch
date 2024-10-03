@@ -57,6 +57,11 @@ export default {
     contrastText: "#FFFFFF",
   },
   divider: "#D9D9D9",
+  skeleton: '#E0E0E0',
+  shadow: {
+    light: "#e0e0e0",
+    dark: "#616161",
+  }
 };
 
 // const tintColorLight = '#0a7ea4';
