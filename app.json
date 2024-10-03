@@ -11,7 +11,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gsalinas1994.petmach"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,6 +42,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/9bc6ac50-0b8d-423d-b55f-753bf8bb020c"
-    }
+    },
+    "sdkVersion": "51.0.0"
   }
 }

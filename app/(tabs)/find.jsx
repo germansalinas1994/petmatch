@@ -1,36 +1,82 @@
-import { View, Text, Image, Pressable, Dimensions } from "react-native";
+import { View, Image, Dimensions, Pressable, Text } from "react-native";
 import React from "react";
 import Colors from "../../constants/Colors";
-import { useSafeAreaInsets } from "react-native-safe-area-context"; // Importar useSafeAreaInsets
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-export default function find() {
+export default function Find() {
   const { width, height } = Dimensions.get("window");
-  const insets = useSafeAreaInsets(); // Obtener los insets de safe area
+  const insets = useSafeAreaInsets();
+
   return (
-    // <View>
-    //   <Text style={{ textAlign: "center", fontSize: 30, marginTop: 50 }}>
-    //     Buscar
-    //   </Text>
-    // </View>
     <View
       style={{
         flex: 1,
-        backgroundColor: Colors.background.default,
-        paddingTop: insets.top, // Usar insets para aplicar padding dinámico
+        backgroundColor: Colors.background.paper,
+        paddingTop: insets.top,
         paddingBottom: insets.bottom,
+        justifyContent: "center", // Centrar verticalmente
+        alignItems: "center", // Centrar horizontalmente
       }}
     >
+      {/* Contenedor de la imagen */}
       <View
         style={{
-          flex: 1,
+          width: width * 1, // Ancho relativo al tamaño de la pantalla
+          height: height * 0.7, // Altura relativa al tamaño de la pantalla
+          overflow: "hidden",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "center",
+          shadowColor: Colors.text.primary,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.8,
+          shadowRadius: 5,
+          elevation: 5, // Sombra en Android
         }}
       >
         <Image
           source={require("../../assets/images/mascota1.jpeg")}
-          resizeMode="contain"
+          resizeMode="cover"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
         />
+      </View>
+
+      {/* Contenedor de botones */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          width: width * 0.6,
+          marginTop: 20,
+        }}
+      >
+        <Pressable
+          style={{
+            backgroundColor: Colors.error.main,
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="times" size={30} color={Colors.text.white} />
+        </Pressable>
+        <Pressable
+          style={{
+            backgroundColor: Colors.success.main,
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="check" size={30} color={Colors.text.white} />
+        </Pressable>
       </View>
     </View>
   );

@@ -1,32 +1,57 @@
-import { View, StyleSheet, FlatList, Text, Image } from "react-native";
+import { View, StyleSheet, FlatList, Text } from "react-native";
 import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import Colors from "../../constants/Colors";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../config/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
+import Loading from "../../components/Loading";
+import { Image } from 'react-native-expo-image-cache';
+
 
 export default function Likes() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true); // Set loading to true on component mount
+
+
 
   useEffect(() => {
+    
     // Usar onSnapshot para escuchar cambios en tiempo real en la colección "users"
     const usersCollection = collection(db, "users");
-    const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
+    const suscriber = onSnapshot(usersCollection, (snapshot) => {
       const usersList = snapshot.docs.map((doc) => ({
         id: doc.id,
+        // los tres puntos son el spread operator, se usa para copiar las propiedades de un objeto a otro
         ...doc.data(),
+
+        // tambien podria hacerse asi
+        // id: doc.id,
+        // nombre: doc.data().nombre,
+        // imagen: doc.data().imagen
+
       }));
       setUsers(usersList);
+      setLoading(false);
+
     });
 
     // Cleanup: Desuscribirse de los cambios cuando el componente se desmonte
-    return () => unsubscribe();
+    return () => suscriber();
   }, []);
+
+
+  if (loading) {
+
+    return <Loading />;
+  }
+
 
   const renderUserItem = ({ item }) => (
     <View style={styles.userCard}>
-      <Image source={{ uri: item.imagen }} style={styles.profileImage} />
+      <Image
+        uri={item.imagen}
+        style={styles.profileImage}
+      />
       <Text style={styles.userName}>{item.nombre}</Text>
     </View>
   );
@@ -38,6 +63,7 @@ export default function Likes() {
         data={users}
         renderItem={renderUserItem}
         keyExtractor={(item) => item.id}
+        initialNumToRender={10}
       />
     </View>
   );
@@ -49,7 +75,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    borderBottomColor: Colors.divider,
   },
   profileImage: {
     width: 50,
