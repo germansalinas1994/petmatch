@@ -17,7 +17,7 @@ const SkeletonItem = ({ width, height, borderRadius, style }: SkeletonItemProps)
     animate={{ opacity: 1 }}
     transition={{
       type: 'timing',
-      duration: 800,
+      duration: 900,
       loop: true,
     }}
   />
