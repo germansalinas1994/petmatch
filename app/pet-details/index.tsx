@@ -441,7 +441,7 @@ const PetDetails = () => {
         </ScrollView>
 
         {/* Botón "Adoptame" */}
-        <View
+        {/* <View
           style={{
             position: "absolute",
             width: "100%",
@@ -464,7 +464,7 @@ const PetDetails = () => {
               Adoptame
             </Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </SafeAreaView>
   );
