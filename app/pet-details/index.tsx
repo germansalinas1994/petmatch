@@ -1,4 +1,5 @@
 // app/pet-details/index.tsx
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -6,14 +7,16 @@ import {
   ScrollView,
   Image,
   Pressable,
-  Touchable,
   TouchableOpacity,
 } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
 import Colors from "@/constants/Colors";
 import Entypo from "@expo/vector-icons/Entypo";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/FontAwesome";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 type User = {
   id: string;
@@ -23,10 +26,11 @@ type User = {
 
 const PetDetails = () => {
   const [petsData, setPetsData] = useState<any[]>([]);
-  // Caso para 1 mascota de prueba
-  const pet = petsData[0];
+  const pet = petsData[0]; // Caso para 1 mascota de prueba
   const [userData, setUserData] = useState<User | null>(null);
   const [readMore, setReadMore] = useState(true);
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const fetchPetsData = async () => {
@@ -38,7 +42,7 @@ const PetDetails = () => {
         });
         setPetsData(petsArray);
       } catch (error) {
-        console.error("Error fetching pets data:", error);
+        console.error("Error al obtener los datos de las mascotas:", error);
       }
     };
 
@@ -56,7 +60,6 @@ const PetDetails = () => {
             id: doc.id,
             nombre: data.nombre ?? "Unknown",
             imagen: data.imagen ?? "",
-            // Agrega otras propiedades si las necesitas
           });
         });
         // Usamos el primer usuario por ahora
@@ -72,363 +75,398 @@ const PetDetails = () => {
   }, []);
 
   return (
-    <View>
-      <ScrollView>
-        {/* Pet Info */}
-        <Image
-          source={require("../../assets/images/mascota1.jpeg")}
-          style={{
-            width: "100%",
-            height: 400,
-            resizeMode: "cover",
-          }}
-        />
-        <View
-          style={{
-            padding: 20,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <View>
-            <Text
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <ScrollView>
+          {/* Informacion de mascota */}
+          <View style={{ position: 'relative' }}>
+            <Image
+              source={require("../../assets/images/mascota1.jpeg")}
               style={{
-                fontFamily: "outfit-Bold",
-                fontSize: 27,
-                color: Colors.text.primary,
+                width: "100%",
+                height: 400,
+                resizeMode: "cover",
               }}
-            >
-              {pet?.nombre || "loading"}
-            </Text>
-
-            <Text
+            />
+            <Pressable
+              onPress={() => router.back()}
               style={{
-                fontFamily: "outfit",
-                fontSize: 16,
-                color: Colors.text.secondary,
-                paddingTop: 5,
-              }}
-            >
-              {pet?.direccion || "loading"}
-            </Text>
-          </View>
-          <Entypo name="heart-outlined" size={30} color="black" />
-        </View>
-
-        {/* Pet Properties */}
-        <View
-          style={{
-            paddingHorizontal: 20,
-          }}
-        >
-          {/* Primera fila */}
-          <View
-            style={{
-              flexDirection: "row",
-            }}
-          >
-            {/* Edad */}
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
+                position: 'absolute',
+                top: insets.top - 10,
+                left: 10,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
                 alignItems: "center",
-                backgroundColor: Colors.background.secondaryButton,
-                padding: 10,
-                margin: 5,
-                borderRadius: 10,
+                justifyContent: "center",
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              
               }}
             >
-              <Image
-                source={require("../../assets/images/calendar.png")}
-                style={{
-                  width: 40,
-                  height: 40,
-                  marginRight: 10,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "outfit",
-                    fontSize: 16,
-                    color: Colors.text.primary,
-                  }}
-                >
-                  Edad
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "outfit-Bold",
-                    fontSize: 18,
-                    color: Colors.text.secondary,
-                  }}
-                >
-                  {pet?.edad + " Años" || "loading"}
-                </Text>
-              </View>
-            </View>
-            {/* Tipo */}
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: Colors.background.secondaryButton,
-                padding: 10,
-                margin: 5,
-                borderRadius: 10,
-              }}
-            >
-              <Image
-                source={require("../../assets/images/bone.png")}
-                style={{
-                  width: 40,
-                  height: 40,
-                  marginRight: 10,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "outfit",
-                    fontSize: 16,
-                    color: Colors.text.primary,
-                  }}
-                >
-                  Tipo
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "outfit-Bold",
-                    fontSize: 18,
-                    color: Colors.text.secondary,
-                  }}
-                >
-                  {pet?.tipo || "loading"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Segunda fila */}
-          <View
-            style={{
-              flexDirection: "row",
-            }}
-          >
-            {/* Peso */}
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: Colors.background.secondaryButton,
-                padding: 10,
-                margin: 5,
-                borderRadius: 10,
-              }}
-            >
-              <Image
-                source={require("../../assets/images/weight.png")}
-                style={{
-                  width: 40,
-                  height: 40,
-                  marginRight: 10,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "outfit",
-                    fontSize: 16,
-                    color: Colors.text.primary,
-                  }}
-                >
-                  Peso
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "outfit-Bold",
-                    fontSize: 18,
-                    color: Colors.text.secondary,
-                  }}
-                >
-                  {pet?.peso + " Kg" || "loading"}
-                </Text>
-              </View>
-            </View>
-            {/* Sexo */}
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: Colors.background.secondaryButton,
-                padding: 10,
-                margin: 5,
-                borderRadius: 10,
-              }}
-            >
-              <Image
-                source={require("../../assets/images/sex.png")}
-                style={{
-                  width: 40,
-                  height: 40,
-                  marginRight: 10,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "outfit",
-                    fontSize: 16,
-                    color: Colors.text.primary,
-                  }}
-                >
-                  Sexo
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "outfit-Bold",
-                    fontSize: 18,
-                    color: Colors.text.secondary,
-                  }}
-                >
-                  {pet?.sexo || "loading"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* About */}
-        <View
-          style={{
-            padding: 20,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: "outfit-Bold",
-              fontSize: 20,
-              color: Colors.text.primary,
-            }}
-          >
-            Acerca de {pet?.nombre || "loading"}
-          </Text>
-          <Text
-            numberOfLines={readMore ? 3 : 20}
-            style={{
-              fontFamily: "outfit",
-              fontSize: 16,
-              color: Colors.text.secondary,
-              paddingTop: 10,
-            }}
-          >
-            {pet?.descripcion || "loading"}
-          </Text>
-          {readMore && (
-            <Pressable onPress={() => setReadMore(false)}>
-              <Text
-                style={{
-                  fontFamily: "outfit",
-                  fontSize: 14,
-                  color: Colors.text.disabled,
-                }}
-              >
-                {"Leer mas"}
-              </Text>
+              <AntDesign name="arrowleft" size={35} color={Colors.text.white} />
             </Pressable>
-          )}
-        </View>
+          </View>
 
-        {/* Owner details */}
-        <View
-          style={{
-            marginHorizontal: 20,
-            paddingHorizontal: 20,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 20,
-            borderWidth: 1,
-            borderRadius: 15,
-            padding: 10,
-            borderBlockColor: Colors.background.primaryButton,
-            backgroundColor: Colors.background.paper,
-            justifyContent: "space-between",
-          }}
-        >
+          {/* Detalles de la mascota */}
           <View
             style={{
-              display: "flex",
+              padding: 20,
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              gap: 20,
             }}
           >
-            <Image
-              source={{ uri: userData?.imagen }}
-              style={{
-                width: 50,
-                height: 50,
-                borderRadius: 99,
-              }}
-            />
             <View>
               <Text
                 style={{
                   fontFamily: "outfit-Bold",
-                  fontSize: 17,
+                  fontSize: 27,
                   color: Colors.text.primary,
                 }}
               >
-                {userData?.nombre}
+                {pet?.nombre || "Cargando..."}
               </Text>
               <Text
                 style={{
                   fontFamily: "outfit",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: Colors.text.secondary,
+                  paddingTop: 5,
                 }}
               >
-                Dueño
+                {pet?.direccion || "Cargando..."}
               </Text>
             </View>
+            <Entypo name="heart-outlined" size={30} color="black" />
           </View>
-          <Ionicons
-            name="send-sharp"
-            size={24}
-            color={Colors.background.dark}
+
+          {/* Propiedades de la mascota */}
+          <View
+            style={{
+              paddingHorizontal: 20,
+            }}
+          >
+            {/* Primera fila */}
+            <View
+              style={{
+                flexDirection: "row",
+              }}
+            >
+              {/* Edad */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: Colors.background.secondaryButton,
+                  padding: 10,
+                  margin: 5,
+                  borderRadius: 10,
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/calendar.png")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginRight: 10,
+                  }}
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "outfit",
+                      fontSize: 16,
+                      color: Colors.text.primary,
+                    }}
+                  >
+                    Edad
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "outfit-Bold",
+                      fontSize: 18,
+                      color: Colors.text.secondary,
+                    }}
+                  >
+                    {pet?.edad + " Años" || "Cargando..."}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Tipo */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: Colors.background.secondaryButton,
+                  padding: 10,
+                  margin: 5,
+                  borderRadius: 10,
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/bone.png")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginRight: 10,
+                  }}
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "outfit",
+                      fontSize: 16,
+                      color: Colors.text.primary,
+                    }}
+                  >
+                    Tipo
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "outfit-Bold",
+                      fontSize: 18,
+                      color: Colors.text.secondary,
+                    }}
+                  >
+                    {pet?.tipo || "Cargando..."}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Segunda fila */}
+            <View
+              style={{
+                flexDirection: "row",
+              }}
+            >
+              {/* Peso */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: Colors.background.secondaryButton,
+                  padding: 10,
+                  margin: 5,
+                  borderRadius: 10,
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/weight.png")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginRight: 10,
+                  }}
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "outfit",
+                      fontSize: 16,
+                      color: Colors.text.primary,
+                    }}
+                  >
+                    Peso
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "outfit-Bold",
+                      fontSize: 18,
+                      color: Colors.text.secondary,
+                    }}
+                  >
+                    {pet?.peso + " Kg" || "Cargando..."}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Sexo */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: Colors.background.secondaryButton,
+                  padding: 10,
+                  margin: 5,
+                  borderRadius: 10,
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/sex.png")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginRight: 10,
+                  }}
+                />
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "outfit",
+                      fontSize: 16,
+                      color: Colors.text.primary,
+                    }}
+                  >
+                    Sexo
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "outfit-Bold",
+                      fontSize: 18,
+                      color: Colors.text.secondary,
+                    }}
+                  >
+                    {pet?.sexo || "Cargando..."}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Acerca de la mascota */}
+          <View
+            style={{
+              padding: 20,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "outfit-Bold",
+                fontSize: 20,
+                color: Colors.text.primary,
+              }}
+            >
+              Acerca de {pet?.nombre || "Cargando..."}
+            </Text>
+            <Text
+              numberOfLines={readMore ? 3 : undefined}
+              style={{
+                fontFamily: "outfit",
+                fontSize: 16,
+                color: Colors.text.secondary,
+                paddingTop: 10,
+              }}
+            >
+              {pet?.descripcion || "Cargando..."}
+            </Text>
+            {readMore && (
+              <Pressable onPress={() => setReadMore(false)}>
+                <Text
+                  style={{
+                    fontFamily: "outfit",
+                    fontSize: 14,
+                    color: Colors.text.disabled,
+                  }}
+                >
+                  Leer más
+                </Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* Detalles del dueño */}
+          <View
+            style={{
+              marginHorizontal: 20,
+              paddingHorizontal: 20,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderRadius: 15,
+              padding: 10,
+              borderColor: Colors.background.primaryButton,
+              backgroundColor: Colors.background.paper,
+              justifyContent: "space-between",
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={
+                  userData?.imagen
+                    ? { uri: userData.imagen }
+                    : require("../../assets/images/adaptive-icon.png")
+                }
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 99,
+                  marginRight: 10,
+                }}
+              />
+              <View>
+                <Text
+                  style={{
+                    fontFamily: "outfit-Bold",
+                    fontSize: 17,
+                    color: Colors.text.primary,
+                  }}
+                >
+                  {userData?.nombre || "Cargando..."}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "outfit",
+                    fontSize: 14,
+                    color: Colors.text.secondary,
+                  }}
+                >
+                  Dueño
+                </Text>
+              </View>
+            </View>
+            <Icon
+              name="send"
+              size={24}
+              color={Colors.background.dark}
+            />
+          </View>
+
+          {/* Espacio adicional */}
+          <View
+            style={{
+              height: 70,
+            }}
           />
-        </View>
+        </ScrollView>
+
+        {/* Botón "Adoptame" */}
         <View
           style={{
-            height: 70,
+            position: "absolute",
+            width: "100%",
+            bottom: 0,
           }}
-        ></View>
-      </ScrollView>
-      {/* adopt me button */}
-      <View style={{
-        position: "absolute",
-        width: "100%",
-        bottom: 0,
-      }}>
-          <TouchableOpacity style={{
-            padding: 15,
-            backgroundColor: Colors.primary.main,
-          }}>
-            <Text style={{
-              textAlign: "center",
-              fontFamily: "outfit-Bold",
-              fontSize: 20,
-            }}>Adoptame</Text>
+        >
+          <TouchableOpacity
+            style={{
+              padding: 15,
+              backgroundColor: Colors.primary.main,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                fontFamily: "outfit-Bold",
+                fontSize: 20,
+              }}
+            >
+              Adoptame
+            </Text>
           </TouchableOpacity>
         </View>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
