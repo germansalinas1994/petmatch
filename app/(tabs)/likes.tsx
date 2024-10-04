@@ -28,17 +28,27 @@ export default function Likes() {
           const data = doc.data() as DocumentData;
           return {
             id: doc.id,
-            nombre: data.nombre ?? 'Unknown', // Default if 'nombre' is not available
-            imagen: data.imagen ?? '', // Default if 'imagen' is not available
+            nombre: data.nombre ?? 'Unknown',
+            imagen: data.imagen ?? '',
+            localidad: data.localidad ?? 'Desconocida',
+            edad: data.edad ?? 'N/A',
+            descripcion: data.descripcion ?? 'Sin descripción',
           } as User;
         });
         resolve(usersList);
       });
     });
+
   };
 
   const openModal = (user: User) => {
-    setSelectedUser(user);
+    setSelectedUser({
+      nombre: user.nombre,
+      imagen: user.imagen,
+      localidad: user.localidad,
+      edad: user.edad,
+      descripcion: user.descripcion,
+    });
     setModalVisible(true);
   };
 
@@ -56,13 +66,13 @@ export default function Likes() {
   );
 
   const renderUserItem = ({ item }: { item: User }) => (
-    <TouchableOpacity onPress={() => openModal(item)}>
       <View style={styles.userCard}>
+      <TouchableOpacity onPress={() => openModal(item)}>
         <Image uri={item.imagen} style={styles.profileImage} />
+      </TouchableOpacity>
         <Text style={styles.userName}>{item.nombre}</Text>
       </View>
-    </TouchableOpacity>
-  );
+    );
 
   return (
     <View>
