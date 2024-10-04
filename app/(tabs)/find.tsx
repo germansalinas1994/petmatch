@@ -3,6 +3,7 @@ import React from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { Link } from "expo-router";
 
 export default function Find() {
   const { width, height } = Dimensions.get("window");
@@ -15,34 +16,36 @@ export default function Find() {
         backgroundColor: Colors.background.paper,
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
-        justifyContent: "center", // Centrar verticalmente
-        alignItems: "center", // Centrar horizontalmente
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       {/* Contenedor de la imagen */}
-      <View
-        style={{
-          width: width * 1, // Ancho relativo al tamaño de la pantalla
-          height: height * 0.7, // Altura relativa al tamaño de la pantalla
-          overflow: "hidden",
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: Colors.text.primary,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.8,
-          shadowRadius: 5,
-          elevation: 5, // Sombra en Android
-        }}
-      >
-        <Image
-          source={require("../../assets/images/mascota1.jpeg")}
-          resizeMode="cover"
+      <Link href="/pet-details" asChild>
+        <Pressable
           style={{
-            width: "100%",
-            height: "100%",
+            width: width * 1,
+            height: height * 0.7,
+            overflow: "hidden",
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: Colors.text.primary,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.8,
+            shadowRadius: 5,
+            elevation: 5,
           }}
-        />
-      </View>
+        >
+          <Image
+            source={require("../../assets/images/mascota1.jpeg")}
+            resizeMode="cover"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </Pressable>
+      </Link>
 
       {/* Contenedor de botones */}
       <View
@@ -65,6 +68,7 @@ export default function Find() {
         >
           <Icon name="times" size={30} color={Colors.text.white} />
         </Pressable>
+
         <Pressable
           style={{
             backgroundColor: Colors.success.main,
