@@ -3,10 +3,12 @@ import React from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { useRouter } from "expo-router";
 
 export default function Find() {
   const { width, height } = Dimensions.get("window");
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
     <View
@@ -73,6 +75,9 @@ export default function Find() {
             borderRadius: 30,
             alignItems: "center",
             justifyContent: "center",
+          }}
+          onPress={() => {
+            router.push('/pet-details');
           }}
         >
           <Icon name="check" size={30} color={Colors.text.white} />
