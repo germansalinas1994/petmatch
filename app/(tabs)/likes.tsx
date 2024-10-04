@@ -81,12 +81,13 @@ export default function Likes() {
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
-    <TouchableOpacity onPress={() => openModal(item)}>
-      <View style={styles.userCard}>
+    <View style={styles.userCard}>
+      <TouchableOpacity onPress={() => openModal(item)}>
         <Image uri={item.imagen} style={styles.profileImage} />
-        <Text style={styles.userName}>{item.nombre}</Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+
+      <Text style={styles.userName}>{item.nombre}</Text>
+    </View>
   );
 
   return (
@@ -143,8 +144,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
-
-
 
 // // Likes.tsx
 // import React from 'react';
