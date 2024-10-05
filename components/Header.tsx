@@ -12,7 +12,7 @@ export default function Header() {
       <View style={styles.headerContainer}>
         {/* Menu Icon */}
         <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="menu" size={30} color={Colors.secondary.dark} />
+          {/* <Ionicons name="menu" size={30} color={Colors.secondary.dark} /> */}
         </TouchableOpacity>
         
         {/* Logo */}
