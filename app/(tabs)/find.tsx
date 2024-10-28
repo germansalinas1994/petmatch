@@ -13,14 +13,11 @@ import { Link } from "expo-router";
 import Buttons from "@/components/find/Buttons";
 import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "../../config/FirebaseConfig";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { Pet } from "@/types";
 import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
+import { Platform } from "react-native"; // Importamos Platform para detección de sistema operativo
 
 const placeholderImage = require("../../assets/images/dog-placeholder.png");
 
@@ -29,7 +26,9 @@ export default function Find() {
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
-  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(new Set());
+  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(
+    new Set()
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
   const hardcodedUserId = "aBzu53nnGyivWW1KDq95"; // Id de mi usuario
@@ -59,7 +58,8 @@ export default function Find() {
       const newPets: Pet[] = [];
       snapshot.forEach((doc) => {
         const pet = { pet_id: doc.id, ...doc.data() } as Pet;
-        if (!evaluatedPetIds.has(pet.pet_id)) { // Excluye mascotas evaluadas
+        if (!evaluatedPetIds.has(pet.pet_id)) {
+          // Excluye mascotas evaluadas
           newPets.push(pet);
         }
       });
@@ -105,37 +105,47 @@ export default function Find() {
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
       <View style={styles.container}>
-        <Link href="/pet-details" asChild>
-          <Pressable style={styles.imageContainer}>
-            {isLoading ? (
-              <SkeletonItem
-                width={Dimensions.get("window").width}
-                height={Dimensions.get("window").height * 0.7}
-                color="#bfbfbf"
-                borderRadius={10}
-              />
-            ) : pets.length > 0 &&
-              pets[0].images &&
-              pets[0].images.length > 0 ? (
-              <Image
-                uri={pets[0].images[0]}
-                style={styles.image}
-                preview={{ uri: placeholderImage }}
-              />
-            ) : (
-              <Text style={styles.noPetsText}>
-                No se encontraron nuevas mascotas disponibles.
-              </Text>
-            )}
-          </Pressable>
-        </Link>
+        {isLoading ? (
+          <SkeletonItem
+            width={Dimensions.get("window").width}
+            height={Dimensions.get("window").height * 0.7}
+            color="#bfbfbf"
+            borderRadius={10}
+          />
+        ) : pets.length > 0 && pets[0].images && pets[0].images[0] ? (
+          // Solo renderizar `Image` si `uri` es una cadena válida
+          <Link href="/pet-details" asChild>
+            <Pressable style={styles.imageContainer}>
+              {typeof pets[0].images[0] === "string" ? (
+                <Image
+                  uri={pets[0].images[0]}
+                  style={styles.image}
+                  preview={{ uri: placeholderImage }}
+                />
+              ) : (
+                // Si `uri` no es válido, mostramos `placeholderImage`
+                <Image
+                  uri={placeholderImage}
+                  style={styles.image}
+                  preview={{ uri: placeholderImage }}
+                />
+              )}
+            </Pressable>
+          </Link>
+        ) : (
+          <View style={styles.imageContainer}>
+            <Text style={styles.noPetsText}>
+              No se encontraron nuevas mascotas disponibles.
+            </Text>
+          </View>
+        )}
 
         <AnimatedEffect
           source={require("@/assets/animations/animation-like.json")}
           show={showLikeAnimation}
           onAnimationEnd={() => {
             setShowLikeAnimation(false);
-            handleAnimationEnd(); // Avanza después de la animación
+            handleAnimationEnd();
           }}
         />
         <AnimatedEffect
@@ -143,7 +153,7 @@ export default function Find() {
           show={showDislikeAnimation}
           onAnimationEnd={() => {
             setShowDislikeAnimation(false);
-            handleAnimationEnd(); // Avanza después de la animación
+            handleAnimationEnd();
           }}
         />
 
