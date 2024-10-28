@@ -17,6 +17,7 @@ import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "../../config/FirebaseConfig";
 import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { Pet } from "@/types";
+// import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
 
 const placeholderImage = require("../../assets/images/dog-placeholder.png");
@@ -26,9 +27,10 @@ export default function Find() {
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
-  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(new Set());
+  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(
+    new Set()
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const hardcodedUserId = "aBzu53nnGyivWW1KDq95";
 
   useEffect(() => {
@@ -44,22 +46,20 @@ export default function Find() {
         setEvaluatedPetIds(newEvaluatedIds);
       }
     );
-  
+
     return () => unsubscribe();
   }, []);
-  
+
   useEffect(() => {
-    if (evaluatedPetIds.size === 0) return; // Espera a que evaluatedPetIds tenga datos
-  
     const unsubscribe = onSnapshot(collection(db, "pets"), (snapshot) => {
       const newPets: Pet[] = snapshot.docs
         .map((doc) => ({ pet_id: doc.id, ...doc.data() } as Pet))
-        .filter((pet) => !evaluatedPetIds.has(pet.pet_id)); // Filtra aquí las mascotas ya evaluadas
-  
+        .filter((pet) => !evaluatedPetIds.has(pet.pet_id));
+
       setPets(newPets);
       setIsLoading(false);
     });
-  
+
     return () => unsubscribe();
   }, [evaluatedPetIds]);
 
@@ -110,21 +110,10 @@ export default function Find() {
             renderItem={({ item }) => (
               <Link href="/pet-details" asChild>
                 <Pressable style={styles.imageContainer}>
-                  {!imageLoaded && (
-                    <SkeletonItem
-                      width={Dimensions.get("window").width}
-                      height={Dimensions.get("window").height * 0.7}
-                      borderRadius={10}
-                    />
-                  )}
                   <Image
-                    source={
-                      item.images && typeof item.images[0] === "string"
-                        ? { uri: item.images[0] }
-                        : placeholderImage
-                    }
+                    source={{ uri: item.images[0] }} // Utiliza la URL de la imagen si es válida
                     style={styles.image}
-                    onLoad={() => setImageLoaded(true)}
+                    onLoad={() => setIsLoading(false)}
                   />
                 </Pressable>
               </Link>
