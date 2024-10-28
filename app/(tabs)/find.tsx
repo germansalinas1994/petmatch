@@ -1,12 +1,12 @@
 import {
   View,
   Dimensions,
-  Pressable,
   StyleSheet,
   SafeAreaView,
   Text,
-  FlatList,
-  Image,
+  Platform,
+  StatusBar,
+
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import Colors from "../../constants/Colors";
@@ -19,6 +19,8 @@ import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { Pet } from "@/types";
 // import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
+import PetList from "@/components/find/PetsList";
+import NotFindPets from "@/components/find/NotFindPets";
 
 const placeholderImage = require("../../assets/images/dog-placeholder.png");
 
@@ -92,7 +94,7 @@ export default function Find() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {isLoading ? (
           <SkeletonItem
@@ -101,31 +103,11 @@ export default function Find() {
             borderRadius={10}
           />
         ) : pets.length > 0 ? (
-          <FlatList
-            data={pets}
-            horizontal
-            pagingEnabled
-            scrollEnabled={false}
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <Link href="/pet-details" asChild>
-                <Pressable style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: item.images[0] }} // Utiliza la URL de la imagen si es válida
-                    style={styles.image}
-                    onLoad={() => setIsLoading(false)}
-                  />
-                </Pressable>
-              </Link>
-            )}
-            keyExtractor={(item) => item.pet_id}
-          />
+          <PetList pets={pets} onLoad={() => setIsLoading(false)}  />
+        
         ) : (
-          <View style={styles.imageContainer}>
-            <Text style={styles.noPetsText}>
-              No se encontraron nuevas mascotas disponibles.
-            </Text>
-          </View>
+          <NotFindPets />
+         
         )}
 
         <AnimatedEffect
@@ -153,32 +135,10 @@ export default function Find() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 10,
     backgroundColor: Colors.background.clearGray,
   },
   container: {
     alignItems: "center",
-  },
-  imageContainer: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height * 0.7,
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: Colors.text.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 5,
-    marginVertical: 20,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  noPetsText: {
-    fontSize: 18,
-    color: Colors.text.primary,
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
+  }
 });
