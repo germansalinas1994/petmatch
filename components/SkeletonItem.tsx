@@ -1,18 +1,22 @@
 // SkeletonItem.tsx
 import React from 'react';
-import { ViewStyle, StyleSheet } from 'react-native';
+import { ViewStyle } from 'react-native';
 import { MotiView } from 'moti';
 
 type SkeletonItemProps = {
   width: number;
   height: number;
   borderRadius: number;
-  style?: ViewStyle; // Optional style prop
+  color?: string; 
+  style?: ViewStyle; 
 };
 
-const SkeletonItem = ({ width, height, borderRadius, style }: SkeletonItemProps) => (
+const SkeletonItem = ({ width, height, borderRadius, color = '#e0e0e0', style }: SkeletonItemProps) => (
   <MotiView
-    style={[{ width, height, borderRadius }, styles.skeleton, style]}
+    style={[
+      { width, height, borderRadius, backgroundColor: color },
+      style,
+    ]}
     from={{ opacity: 0.3 }}
     animate={{ opacity: 1 }}
     transition={{
@@ -22,11 +26,5 @@ const SkeletonItem = ({ width, height, borderRadius, style }: SkeletonItemProps)
     }}
   />
 );
-
-const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: '#e0e0e0',
-  },
-});
 
 export default SkeletonItem;
