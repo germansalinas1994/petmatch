@@ -6,8 +6,9 @@ import {
   SafeAreaView,
   Text,
   FlatList,
+  Image,
 } from "react-native";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Link } from "expo-router";
@@ -16,7 +17,6 @@ import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "../../config/FirebaseConfig";
 import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { Pet } from "@/types";
-import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
 
 const placeholderImage = require("../../assets/images/dog-placeholder.png");
@@ -26,10 +26,9 @@ export default function Find() {
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
-  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const hardcodedUserId = "aBzu53nnGyivWW1KDq95";
 
   useEffect(() => {
@@ -45,20 +44,22 @@ export default function Find() {
         setEvaluatedPetIds(newEvaluatedIds);
       }
     );
-
+  
     return () => unsubscribe();
   }, []);
-
+  
   useEffect(() => {
+    if (evaluatedPetIds.size === 0) return; // Espera a que evaluatedPetIds tenga datos
+  
     const unsubscribe = onSnapshot(collection(db, "pets"), (snapshot) => {
       const newPets: Pet[] = snapshot.docs
         .map((doc) => ({ pet_id: doc.id, ...doc.data() } as Pet))
-        .filter((pet) => !evaluatedPetIds.has(pet.pet_id));
-
+        .filter((pet) => !evaluatedPetIds.has(pet.pet_id)); // Filtra aquí las mascotas ya evaluadas
+  
       setPets(newPets);
       setIsLoading(false);
     });
-
+  
     return () => unsubscribe();
   }, [evaluatedPetIds]);
 
@@ -81,17 +82,14 @@ export default function Find() {
 
     const currentPetId = pets[0].pet_id;
 
-
-    if (status === "like") await setShowLikeAnimation(true);
-    if (status === "dislike") await setShowDislikeAnimation(true);
-
     try {
+      if (status === "like") await setShowLikeAnimation(true);
+      if (status === "dislike") await setShowDislikeAnimation(true);
       await saveUserPetInteraction(status, currentPetId);
     } catch (error) {
       console.error("Error en la interacción:", error);
     }
   };
-
 
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
@@ -112,19 +110,22 @@ export default function Find() {
             renderItem={({ item }) => (
               <Link href="/pet-details" asChild>
                 <Pressable style={styles.imageContainer}>
-                  {item.images && typeof item.images[0] === "string" ? (
-                    <Image
-                      uri={item.images[0]}
-                      style={styles.image}
-                      preview={{ uri: placeholderImage }}
-                    />
-                  ) : (
-                    <Image
-                      uri={placeholderImage}
-                      style={styles.image}
-                      preview={{ uri: placeholderImage }}
+                  {!imageLoaded && (
+                    <SkeletonItem
+                      width={Dimensions.get("window").width}
+                      height={Dimensions.get("window").height * 0.7}
+                      borderRadius={10}
                     />
                   )}
+                  <Image
+                    source={
+                      item.images && typeof item.images[0] === "string"
+                        ? { uri: item.images[0] }
+                        : placeholderImage
+                    }
+                    style={styles.image}
+                    onLoad={() => setImageLoaded(true)}
+                  />
                 </Pressable>
               </Link>
             )}
@@ -159,7 +160,6 @@ export default function Find() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeArea: {
