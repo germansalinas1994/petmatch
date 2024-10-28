@@ -5,8 +5,9 @@ import {
   StyleSheet,
   SafeAreaView,
   Text,
+  FlatList,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Link } from "expo-router";
@@ -17,7 +18,6 @@ import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { Pet } from "@/types";
 import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
-import { Platform } from "react-native"; // Importamos Platform para detección de sistema operativo
 
 const placeholderImage = require("../../assets/images/dog-placeholder.png");
 
@@ -30,21 +30,18 @@ export default function Find() {
     new Set()
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const hardcodedUserId = "aBzu53nnGyivWW1KDq95"; // Id de mi usuario
+  const hardcodedUserId = "aBzu53nnGyivWW1KDq95";
 
-  // Escucha en tiempo real para mascotas evaluadas
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "user_pets_likes_dislikes"),
       (snapshot) => {
-        const newEvaluatedIds = new Set<string>();
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.user_id === hardcodedUserId) {
-            newEvaluatedIds.add(data.pet_id);
-          }
-        });
+        const newEvaluatedIds = new Set<string>(
+          snapshot.docs
+            .map((doc) => doc.data())
+            .filter((data) => data.user_id === hardcodedUserId)
+            .map((data) => data.pet_id)
+        );
         setEvaluatedPetIds(newEvaluatedIds);
       }
     );
@@ -52,17 +49,12 @@ export default function Find() {
     return () => unsubscribe();
   }, []);
 
-  // Escucha en tiempo real para obtener las mascotas, excluyendo las evaluadas
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "pets"), (snapshot) => {
-      const newPets: Pet[] = [];
-      snapshot.forEach((doc) => {
-        const pet = { pet_id: doc.id, ...doc.data() } as Pet;
-        if (!evaluatedPetIds.has(pet.pet_id)) {
-          // Excluye mascotas evaluadas
-          newPets.push(pet);
-        }
-      });
+      const newPets: Pet[] = snapshot.docs
+        .map((doc) => ({ pet_id: doc.id, ...doc.data() } as Pet))
+        .filter((pet) => !evaluatedPetIds.has(pet.pet_id));
+
       setPets(newPets);
       setIsLoading(false);
     });
@@ -84,23 +76,22 @@ export default function Find() {
     }
   };
 
-  const handleInteraction = (status: string) => {
-    if (pets.length === 0 || isAnimating) return;
+  const handleInteraction = async (status: string) => {
+    if (pets.length === 0) return;
 
     const currentPetId = pets[0].pet_id;
-    setIsAnimating(true); // Bloquea el avance hasta que la animación termine
 
-    if (status === "like") setShowLikeAnimation(true);
-    if (status === "dislike") setShowDislikeAnimation(true);
 
-    saveUserPetInteraction(status, currentPetId);
+    if (status === "like") await setShowLikeAnimation(true);
+    if (status === "dislike") await setShowDislikeAnimation(true);
+
+    try {
+      await saveUserPetInteraction(status, currentPetId);
+    } catch (error) {
+      console.error("Error en la interacción:", error);
+    }
   };
 
-  const handleAnimationEnd = () => {
-    // Avanza a la siguiente mascota solo cuando la animación termina
-    setPets((prevPets) => prevPets.slice(1));
-    setIsAnimating(false); // Desbloquea el avance
-  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
@@ -109,29 +100,36 @@ export default function Find() {
           <SkeletonItem
             width={Dimensions.get("window").width}
             height={Dimensions.get("window").height * 0.7}
-            color="#bfbfbf"
             borderRadius={10}
           />
-        ) : pets.length > 0 && pets[0].images && pets[0].images[0] ? (
-          // Solo renderizar `Image` si `uri` es una cadena válida
-          <Link href="/pet-details" asChild>
-            <Pressable style={styles.imageContainer}>
-              {typeof pets[0].images[0] === "string" ? (
-                <Image
-                  uri={pets[0].images[0]}
-                  style={styles.image}
-                  preview={{ uri: placeholderImage }}
-                />
-              ) : (
-                // Si `uri` no es válido, mostramos `placeholderImage`
-                <Image
-                  uri={placeholderImage}
-                  style={styles.image}
-                  preview={{ uri: placeholderImage }}
-                />
-              )}
-            </Pressable>
-          </Link>
+        ) : pets.length > 0 ? (
+          <FlatList
+            data={pets}
+            horizontal
+            pagingEnabled
+            scrollEnabled={false}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <Link href="/pet-details" asChild>
+                <Pressable style={styles.imageContainer}>
+                  {item.images && typeof item.images[0] === "string" ? (
+                    <Image
+                      uri={item.images[0]}
+                      style={styles.image}
+                      preview={{ uri: placeholderImage }}
+                    />
+                  ) : (
+                    <Image
+                      uri={placeholderImage}
+                      style={styles.image}
+                      preview={{ uri: placeholderImage }}
+                    />
+                  )}
+                </Pressable>
+              </Link>
+            )}
+            keyExtractor={(item) => item.pet_id}
+          />
         ) : (
           <View style={styles.imageContainer}>
             <Text style={styles.noPetsText}>
@@ -143,18 +141,12 @@ export default function Find() {
         <AnimatedEffect
           source={require("@/assets/animations/animation-like.json")}
           show={showLikeAnimation}
-          onAnimationEnd={() => {
-            setShowLikeAnimation(false);
-            handleAnimationEnd();
-          }}
+          onAnimationEnd={() => setShowLikeAnimation(false)}
         />
         <AnimatedEffect
           source={require("@/assets/animations/cross-animation.json")}
           show={showDislikeAnimation}
-          onAnimationEnd={() => {
-            setShowDislikeAnimation(false);
-            handleAnimationEnd();
-          }}
+          onAnimationEnd={() => setShowDislikeAnimation(false)}
         />
 
         {!isLoading && pets.length > 0 && (
@@ -168,16 +160,17 @@ export default function Find() {
   );
 }
 
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background.paper,
+    backgroundColor: Colors.background.clearGray,
   },
   container: {
     alignItems: "center",
   },
   imageContainer: {
-    width: "100%",
+    width: Dimensions.get("window").width,
     height: Dimensions.get("window").height * 0.7,
     overflow: "hidden",
     alignItems: "center",
