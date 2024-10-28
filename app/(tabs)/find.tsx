@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   Text,
 } from "react-native";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Link } from "expo-router";
@@ -20,7 +20,6 @@ import {
   getDocs,
   addDoc,
   limit,
-  startAfter,
 } from "firebase/firestore";
 import { Pet } from "@/types";
 import { Image } from "react-native-expo-image-cache";
@@ -34,26 +33,17 @@ export default function Find() {
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [pets, setPets] = useState<Pet[]>([]);
-  const evaluatedPetIdsRef = useRef<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false); // Nuevo estado para controlar la animación
 
   const hardcodedEmail = "germansalinas.fce@gmail.com";
 
   useEffect(() => {
     const initializeData = async () => {
       await fetchUserId();
+      await fetchUnlikedPets();
     };
     initializeData();
-  }, []);
-
-  useEffect(() => {
-    if (userId) {
-      const fetchData = async () => {
-        await fetchEvaluatedPetIds();
-        await fetchUnlikedPets(10);
-      };
-      fetchData();
-    }
   }, [userId]);
 
   const fetchUserId = async () => {
@@ -72,10 +62,12 @@ export default function Find() {
     }
   };
 
-  const fetchEvaluatedPetIds = async () => {
+  const fetchUnlikedPets = async () => {
     if (!userId) return;
 
     try {
+      setIsLoading(true);
+
       const interactionsRef = collection(db, "user_pets_likes_dislikes");
       const interactionsQuery = query(
         interactionsRef,
@@ -83,61 +75,22 @@ export default function Find() {
       );
       const interactionsSnapshot = await getDocs(interactionsQuery);
 
-      const evaluatedIds = interactionsSnapshot.docs.map(
+      const evaluatedPetIds = interactionsSnapshot.docs.map(
         (doc) => doc.data().pet_id
       );
-      evaluatedPetIdsRef.current = new Set(evaluatedIds);
-    } catch (error) {
-      console.error("Error obteniendo IDs de mascotas evaluadas:", error);
-    }
-  };
-
-  const fetchUnlikedPets = async (limitCount = 10) => {
-    if (!userId) return;
-
-    try {
-      setIsLoading(true);
 
       const petsRef = collection(db, "pets");
+      const petsQuery = query(petsRef, limit(20));
+      const petsSnapshot = await getDocs(petsQuery);
 
-      let unlikedPets: Pet[] = [];
-      let lastVisible: any = null;
-      const batchSize = 20; // Tamaño del lote
-      let totalFetched = 0;
-      const maxFetch = 500; // Límite para prevenir loops infinitos
-
-      while (unlikedPets.length < limitCount && totalFetched < maxFetch) {
-        let petsQuery;
-        if (lastVisible) {
-          petsQuery = query(petsRef, startAfter(lastVisible), limit(batchSize));
-        } else {
-          petsQuery = query(petsRef, limit(batchSize));
-        }
-
-        const petsSnapshot = await getDocs(petsQuery);
-        if (petsSnapshot.empty) {
-          break;
-        }
-
-        totalFetched += petsSnapshot.docs.length;
-        lastVisible = petsSnapshot.docs[petsSnapshot.docs.length - 1];
-
-        const fetchedPets = petsSnapshot.docs.map((doc) => ({
+      const unlikedPets = petsSnapshot.docs
+        .map((doc) => ({
           pet_id: doc.id,
           ...doc.data(),
-        })) as Pet[];
+        }))
+        .filter((pet) => !evaluatedPetIds.includes(pet.pet_id)) as Pet[];
 
-        const filteredPets = fetchedPets.filter(
-          (pet) => !evaluatedPetIdsRef.current.has(pet.pet_id)
-        );
-
-        unlikedPets.push(...filteredPets);
-      }
-
-      // Limita al número requerido
-      const finalPets = unlikedPets.slice(0, limitCount);
-
-      setPets((prevPets) => [...prevPets, ...finalPets]);
+      setPets(unlikedPets);
       setIsLoading(false);
     } catch (error) {
       console.error("Error obteniendo mascotas no evaluadas:", error);
@@ -158,34 +111,34 @@ export default function Find() {
         status: status,
         createdAt: new Date(),
       });
-      // Actualiza la referencia local
-      evaluatedPetIdsRef.current.add(petId);
+      console.log(`${status} registrado en Firestore.`);
     } catch (error) {
       console.error("Error guardando la interacción:", error);
     }
   };
 
   const handleInteraction = (status: string) => {
-    if (pets.length === 0) return;
+    if (pets.length === 0 || isAnimating) return;
 
     const currentPetId = pets[0].pet_id;
+    setIsAnimating(true); // Bloquea el avance hasta que la animación termine
+
     if (status === "like") setShowLikeAnimation(true);
     if (status === "dislike") setShowDislikeAnimation(true);
 
     saveUserPetInteraction(status, currentPetId);
+  };
 
-    setTimeout(() => {
-      setShowLikeAnimation(false);
-      setShowDislikeAnimation(false);
-
-      setPets((prevPets) => {
-        const newPets = prevPets.slice(1);
-        if (newPets.length < 5) {
-          fetchUnlikedPets(5); // Carga más mascotas si quedan menos de 5
-        }
-        return newPets;
-      });
-    }, 2000);
+  const handleAnimationEnd = () => {
+    // Avanza a la siguiente mascota solo cuando la animación termina
+    setPets((prevPets) => {
+      const newPets = prevPets.slice(1);
+      if (newPets.length < 5) {
+        fetchUnlikedPets(); // Carga más mascotas si quedan menos de 5
+      }
+      return newPets;
+    });
+    setIsAnimating(false); // Desbloquea el avance
   };
 
   return (
@@ -219,13 +172,18 @@ export default function Find() {
         <AnimatedEffect
           source={require("@/assets/animations/animation-like.json")}
           show={showLikeAnimation}
-          onAnimationEnd={() => setShowLikeAnimation(false)}
+          onAnimationEnd={() => {
+            setShowLikeAnimation(false);
+            handleAnimationEnd(); // Avanza después de la animación
+          }}
         />
-
         <AnimatedEffect
           source={require("@/assets/animations/cross-animation.json")}
           show={showDislikeAnimation}
-          onAnimationEnd={() => setShowDislikeAnimation(false)}
+          onAnimationEnd={() => {
+            setShowDislikeAnimation(false);
+            handleAnimationEnd(); // Avanza después de la animación
+          }}
         />
 
         {!isLoading && pets.length > 0 && (
@@ -238,6 +196,7 @@ export default function Find() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   safeArea: {
