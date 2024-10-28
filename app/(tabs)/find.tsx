@@ -15,11 +15,8 @@ import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "../../config/FirebaseConfig";
 import {
   collection,
-  query,
-  where,
-  getDocs,
   addDoc,
-  limit,
+  onSnapshot,
 } from "firebase/firestore";
 import { Pet } from "@/types";
 import { Image } from "react-native-expo-image-cache";
@@ -31,82 +28,52 @@ export default function Find() {
   const insets = useSafeAreaInsets();
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [pets, setPets] = useState<Pet[]>([]);
+  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false); // Nuevo estado para controlar la animación
+  const [isAnimating, setIsAnimating] = useState(false);
+  const hardcodedUserId = "aBzu53nnGyivWW1KDq95"; // Id de mi usuario
 
-  const hardcodedEmail = "germansalinas.fce@gmail.com";
-
+  // Escucha en tiempo real para mascotas evaluadas
   useEffect(() => {
-    const initializeData = async () => {
-      await fetchUserId();
-      await fetchUnlikedPets();
-    };
-    initializeData();
-  }, [userId]);
-
-  const fetchUserId = async () => {
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("mail", "==", hardcodedEmail));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        setUserId(userDoc.id);
-      } else {
-        console.log("Usuario no encontrado.");
+    const unsubscribe = onSnapshot(
+      collection(db, "user_pets_likes_dislikes"),
+      (snapshot) => {
+        const newEvaluatedIds = new Set<string>();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.user_id === hardcodedUserId) {
+            newEvaluatedIds.add(data.pet_id);
+          }
+        });
+        setEvaluatedPetIds(newEvaluatedIds);
       }
-    } catch (error) {
-      console.error("Error recuperando el usuario:", error);
-    }
-  };
+    );
 
-  const fetchUnlikedPets = async () => {
-    if (!userId) return;
+    return () => unsubscribe();
+  }, []);
 
-    try {
-      setIsLoading(true);
-
-      const interactionsRef = collection(db, "user_pets_likes_dislikes");
-      const interactionsQuery = query(
-        interactionsRef,
-        where("user_id", "==", userId)
-      );
-      const interactionsSnapshot = await getDocs(interactionsQuery);
-
-      const evaluatedPetIds = interactionsSnapshot.docs.map(
-        (doc) => doc.data().pet_id
-      );
-
-      const petsRef = collection(db, "pets");
-      const petsQuery = query(petsRef, limit(20));
-      const petsSnapshot = await getDocs(petsQuery);
-
-      const unlikedPets = petsSnapshot.docs
-        .map((doc) => ({
-          pet_id: doc.id,
-          ...doc.data(),
-        }))
-        .filter((pet) => !evaluatedPetIds.includes(pet.pet_id)) as Pet[];
-
-      setPets(unlikedPets);
+  // Escucha en tiempo real para obtener las mascotas, excluyendo las evaluadas
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "pets"), (snapshot) => {
+      const newPets: Pet[] = [];
+      snapshot.forEach((doc) => {
+        const pet = { pet_id: doc.id, ...doc.data() } as Pet;
+        if (!evaluatedPetIds.has(pet.pet_id)) { // Excluye mascotas evaluadas
+          newPets.push(pet);
+        }
+      });
+      setPets(newPets);
       setIsLoading(false);
-    } catch (error) {
-      console.error("Error obteniendo mascotas no evaluadas:", error);
-      setIsLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, [evaluatedPetIds]);
 
   const saveUserPetInteraction = async (status: string, petId: string) => {
-    if (!userId) {
-      console.log("User ID no disponible.");
-      return;
-    }
-
     try {
       await addDoc(collection(db, "user_pets_likes_dislikes"), {
-        user_id: userId,
+        user_id: hardcodedUserId,
         pet_id: petId,
         status: status,
         createdAt: new Date(),
@@ -131,13 +98,7 @@ export default function Find() {
 
   const handleAnimationEnd = () => {
     // Avanza a la siguiente mascota solo cuando la animación termina
-    setPets((prevPets) => {
-      const newPets = prevPets.slice(1);
-      if (newPets.length < 5) {
-        fetchUnlikedPets(); // Carga más mascotas si quedan menos de 5
-      }
-      return newPets;
-    });
+    setPets((prevPets) => prevPets.slice(1));
     setIsAnimating(false); // Desbloquea el avance
   };
 
@@ -196,7 +157,6 @@ export default function Find() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeArea: {
