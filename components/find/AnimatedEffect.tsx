@@ -23,7 +23,7 @@ export default function AnimatedEffect({
         loop={false}
         style={styles.animation}
         onAnimationFinish={onAnimationEnd}
-        speed={2}
+        speed={3}
       />
     </View>
   );
