@@ -3,29 +3,29 @@ import {
   Dimensions,
   StyleSheet,
   SafeAreaView,
-  Text,
   Platform,
   StatusBar,
-
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Link } from "expo-router";
 import Buttons from "@/components/find/Buttons";
 import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "../../config/FirebaseConfig";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 import { Pet } from "@/types";
 // import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
 import PetList from "@/components/find/PetsList";
 import NotFindPets from "@/components/find/NotFindPets";
 
-const placeholderImage = require("../../assets/images/dog-placeholder.png");
-
 export default function Find() {
-  const insets = useSafeAreaInsets();
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
@@ -36,18 +36,18 @@ export default function Find() {
   const hardcodedUserId = "aBzu53nnGyivWW1KDq95";
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    const userQuery = query(
       collection(db, "user_pets_likes_dislikes"),
-      (snapshot) => {
-        const newEvaluatedIds = new Set<string>(
-          snapshot.docs
-            .map((doc) => doc.data())
-            .filter((data) => data.user_id === hardcodedUserId)
-            .map((data) => data.pet_id)
-        );
-        setEvaluatedPetIds(newEvaluatedIds);
-      }
+      where("user_id", "==", hardcodedUserId)
     );
+
+    const unsubscribe = onSnapshot(userQuery, (snapshot) => {
+      //me quedo con los ids de las mascotas evaluadas
+      const newEvaluatedIds = new Set<string>(
+        snapshot.docs.map((doc) => doc.data().pet_id)
+      );
+      setEvaluatedPetIds(newEvaluatedIds);
+    });
 
     return () => unsubscribe();
   }, []);
@@ -83,11 +83,12 @@ export default function Find() {
     if (pets.length === 0) return;
 
     const currentPetId = pets[0].pet_id;
+    setEvaluatedPetIds(new Set(evaluatedPetIds).add(currentPetId));
 
     try {
       if (status === "like") await setShowLikeAnimation(true);
       if (status === "dislike") await setShowDislikeAnimation(true);
-      await saveUserPetInteraction(status, currentPetId);
+      saveUserPetInteraction(status, currentPetId);
     } catch (error) {
       console.error("Error en la interacción:", error);
     }
@@ -103,11 +104,9 @@ export default function Find() {
             borderRadius={10}
           />
         ) : pets.length > 0 ? (
-          <PetList pets={pets} onLoad={() => setIsLoading(false)}  />
-        
+          <PetList pets={pets} onLoad={() => setIsLoading(false)} />
         ) : (
           <NotFindPets />
-         
         )}
 
         <AnimatedEffect
@@ -140,5 +139,5 @@ const styles = StyleSheet.create({
   },
   container: {
     alignItems: "center",
-  }
+  },
 });
