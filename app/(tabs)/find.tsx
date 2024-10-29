@@ -6,12 +6,10 @@ import {
   Text,
   Platform,
   StatusBar,
-
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import Colors from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Link } from "expo-router";
 import Buttons from "@/components/find/Buttons";
 import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "../../config/FirebaseConfig";
@@ -22,10 +20,7 @@ import SkeletonItem from "@/components/SkeletonItem";
 import PetList from "@/components/find/PetsList";
 import NotFindPets from "@/components/find/NotFindPets";
 
-const placeholderImage = require("../../assets/images/dog-placeholder.png");
-
 export default function Find() {
-  const insets = useSafeAreaInsets();
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
@@ -92,6 +87,11 @@ export default function Find() {
       console.error("Error en la interacción:", error);
     }
   };
+  
+
+  const removeCurrentPet = () => {
+    setPets((prevPets) => prevPets.slice(1));
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -103,22 +103,26 @@ export default function Find() {
             borderRadius={10}
           />
         ) : pets.length > 0 ? (
-          <PetList pets={pets} onLoad={() => setIsLoading(false)}  />
-        
+          <PetList pets={pets} onLoad={() => setIsLoading(false)} />
         ) : (
           <NotFindPets />
-         
         )}
 
         <AnimatedEffect
           source={require("@/assets/animations/animation-like.json")}
           show={showLikeAnimation}
-          onAnimationEnd={() => setShowLikeAnimation(false)}
+          onAnimationEnd={() => {
+            setShowLikeAnimation(false);
+            removeCurrentPet();
+          }}
         />
         <AnimatedEffect
           source={require("@/assets/animations/cross-animation.json")}
           show={showDislikeAnimation}
-          onAnimationEnd={() => setShowDislikeAnimation(false)}
+          onAnimationEnd={() => {
+            setShowDislikeAnimation(false);
+            removeCurrentPet();
+          }}
         />
 
         {!isLoading && pets.length > 0 && (
@@ -140,5 +144,5 @@ const styles = StyleSheet.create({
   },
   container: {
     alignItems: "center",
-  }
+  },
 });
