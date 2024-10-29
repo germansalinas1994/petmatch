@@ -1,5 +1,12 @@
 import React from "react";
-import { View, FlatList, Pressable, Image, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  FlatList,
+  Pressable,
+  Image,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import { Link } from "expo-router";
 import { Pet } from "@/types";
 import Colors from "@/constants/Colors";
@@ -7,9 +14,10 @@ import Colors from "@/constants/Colors";
 type PetListProps = {
   pets: Pet[];
   onLoad: () => void;
+  handleSelectPet: (pet: Pet) => void; // Nueva prop
 };
 
-export default function PetList({ pets, onLoad }: PetListProps) {
+export default function PetList({ pets, onLoad,handleSelectPet }: PetListProps) {
   return (
     <FlatList
       data={pets}
@@ -19,7 +27,8 @@ export default function PetList({ pets, onLoad }: PetListProps) {
       showsHorizontalScrollIndicator={false}
       renderItem={({ item }) => (
         <Link
-          href={{
+        onPress={() => handleSelectPet(item)} // Llamada a handleSelectPet
+        href={{
             pathname: "/pet-details/[petId]",
             params: { petId: item.pet_id },
           }}

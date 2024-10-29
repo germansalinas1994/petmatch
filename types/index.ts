@@ -2,21 +2,23 @@
 
 export interface User {
     user_id: string;
-    name: string;
+    nombre: string;
     email: string;
-    photoURL?: string;
+    imagen?: string;
     createdAt: Date;
-  }
+  } 
   
   export interface Pet {
     pet_id: string;
-    name: string;
-    species: string;
-    age: number;
-    gender: string;
+    nombre: string;
+    tipo: string;
+    edad: number;
+    sexo: string;
+    peso: string;
     images: string[];
-    description: string;
-    createdAt: Date;
+    user_id: string;
+    direccion: string;
+    descripcion: string;
   }
   
   export interface UserPetInteraction {

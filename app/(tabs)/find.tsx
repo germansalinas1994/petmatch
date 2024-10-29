@@ -24,6 +24,7 @@ import { Pet } from "@/types";
 import SkeletonItem from "@/components/SkeletonItem";
 import PetList from "@/components/find/PetsList";
 import NotFindPets from "@/components/find/NotFindPets";
+import { usePetStore } from "@/stores/petStore";
 
 export default function Find() {
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
@@ -34,6 +35,7 @@ export default function Find() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const hardcodedUserId = "aBzu53nnGyivWW1KDq95";
+  const setSelectedPet = usePetStore((state) => state.setSelectedPet);
 
   useEffect(() => {
     const userQuery = query(
@@ -94,6 +96,10 @@ export default function Find() {
     }
   };
 
+  const handleSelectPet = (pet: Pet) => {
+    setSelectedPet(pet); // Guardar el objeto pet en el estado global
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -104,7 +110,11 @@ export default function Find() {
             borderRadius={10}
           />
         ) : pets.length > 0 ? (
-          <PetList pets={pets} onLoad={() => setIsLoading(false)} />
+          <PetList
+            pets={pets}
+            onLoad={() => setIsLoading(false)}
+            handleSelectPet={handleSelectPet}
+          />
         ) : (
           <NotFindPets />
         )}

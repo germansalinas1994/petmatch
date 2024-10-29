@@ -1,473 +1,91 @@
-// app/pet-details/index.tsx
-
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
-import { collection, getDocs } from "firebase/firestore";
+import { View, ScrollView, StyleSheet, SafeAreaView } from "react-native";
+import { getDoc, doc } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
-import Colors from "@/constants/Colors";
-import Entypo from "@expo/vector-icons/Entypo";
-import Icon from "@expo/vector-icons/FontAwesome";
-import { useRouter } from "expo-router";
-import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePetStore } from "@/stores/petStore";
+import SkeletonItem from "@/components/SkeletonItem";
+import PetImages from "@/components/pet-details/PetImages";
+import PetInfo from "@/components/pet-details/PetInfo";
+import PetAbout from "@/components/pet-details/PetAbout";
+import UserInfo from "@/components/pet-details/UserInfo";
+import { User } from "@/types";
 
-type User = {
-  id: string;
-  nombre: string;
-  imagen: string;
-};
-
-const PetDetails = () => {
-  const [petsData, setPetsData] = useState<any[]>([]);
-  const pet = petsData[0]; // Caso para 1 mascota de prueba
+export default function Find() {
   const [userData, setUserData] = useState<User | null>(null);
   const [readMore, setReadMore] = useState(true);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { petId } = useLocalSearchParams();
+  const petData = usePetStore((state) => state.selectedPet);
 
   useEffect(() => {
-    const fetchPetsData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "pets"));
-        const petsArray: any[] = [];
-        querySnapshot.forEach((doc) => {
-          petsArray.push({ id: doc.id, ...doc.data() });
-        });
-        setPetsData(petsArray);
-      } catch (error) {
-        console.error("Error al obtener los datos de las mascotas:", error);
+    if (petData?.user_id) {
+      fetchUserData(petData.user_id);
+    }
+  }, [petData]);
+
+  const fetchUserData = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        setUserData(userDoc.data() as User);
       }
-    };
-
-    fetchPetsData();
-  }, []);
-
-  useEffect(() => {
-    const fetchUsersData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const usersArray: User[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          usersArray.push({
-            id: doc.id,
-            nombre: data.nombre ?? "Unknown",
-            imagen: data.imagen ?? "",
-          });
-        });
-        // Usamos el primer usuario por ahora
-        if (usersArray.length > 0) {
-          setUserData(usersArray[0]);
-        }
-      } catch (error) {
-        console.error("Error al obtener los datos de los usuarios:", error);
-      }
-    };
-
-    fetchUsersData();
-  }, []);
+    } catch (error) {
+      console.error("Error al obtener los datos del usuario:", error);
+    }
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.innerContainer}>
         <ScrollView>
-          {/* Informacion de mascota */}
-          <View style={{ position: 'relative' }}>
-            <Image
-              source={require("../../assets/images/mascota1.jpeg")}
-              style={{
-                width: "100%",
-                height: 400,
-                resizeMode: "cover",
-              }}
+          {petData ? (
+            <PetImages
+              images={petData.images || []}
+              onBackPress={() => router.back()}
+              topInset={insets.top}
             />
-            <Pressable
-              onPress={() => router.back()}
-              style={{
-                position: 'absolute',
-                top: insets.top - 10,
-                left: 10,
-                width: 60,
-                height: 60,
-                borderRadius: 30,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-              
-              }}
-            >
-              <AntDesign name="arrowleft" size={35} color={Colors.text.white} />
-            </Pressable>
-          </View>
+          ) : (
+            <SkeletonItem width={300} height={200} borderRadius={10} style={{ marginTop: insets.top, alignSelf: "center" }} />
+          )}
 
-          {/* Detalles de la mascota */}
-          <View
-            style={{
-              padding: 20,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <View>
-              <Text
-                style={{
-                  fontFamily: "outfit-Bold",
-                  fontSize: 27,
-                  color: Colors.text.primary,
-                }}
-              >
-                {pet?.nombre || "Cargando..."}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: "outfit",
-                  fontSize: 16,
-                  color: Colors.text.secondary,
-                  paddingTop: 5,
-                }}
-              >
-                {pet?.direccion || "Cargando..."}
-              </Text>
-            </View>
-            <Entypo name="heart-outlined" size={30} color="black" />
-          </View>
+          {petData ? (
+            <PetInfo petData={petData} />
+          ) : (
+            <SkeletonItem width={300} height={60} borderRadius={10} style={{ alignSelf: "center", marginVertical: 10 }} />
+          )}
 
-          {/* Propiedades de la mascota */}
-          <View
-            style={{
-              paddingHorizontal: 20,
-            }}
-          >
-            {/* Primera fila */}
-            <View
-              style={{
-                flexDirection: "row",
-              }}
-            >
-              {/* Edad */}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: Colors.background.secondaryButton,
-                  padding: 10,
-                  margin: 5,
-                  borderRadius: 10,
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/calendar.png")}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginRight: 10,
-                  }}
-                />
-                <View>
-                  <Text
-                    style={{
-                      fontFamily: "outfit",
-                      fontSize: 16,
-                      color: Colors.text.primary,
-                    }}
-                  >
-                    Edad
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "outfit-Bold",
-                      fontSize: 18,
-                      color: Colors.text.secondary,
-                    }}
-                  >
-                    {pet?.edad + " Años" || "Cargando..."}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Tipo */}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: Colors.background.secondaryButton,
-                  padding: 10,
-                  margin: 5,
-                  borderRadius: 10,
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/bone.png")}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginRight: 10,
-                  }}
-                />
-                <View>
-                  <Text
-                    style={{
-                      fontFamily: "outfit",
-                      fontSize: 16,
-                      color: Colors.text.primary,
-                    }}
-                  >
-                    Tipo
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "outfit-Bold",
-                      fontSize: 18,
-                      color: Colors.text.secondary,
-                    }}
-                  >
-                    {pet?.tipo || "Cargando..."}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Segunda fila */}
-            <View
-              style={{
-                flexDirection: "row",
-              }}
-            >
-              {/* Peso */}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: Colors.background.secondaryButton,
-                  padding: 10,
-                  margin: 5,
-                  borderRadius: 10,
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/weight.png")}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginRight: 10,
-                  }}
-                />
-                <View>
-                  <Text
-                    style={{
-                      fontFamily: "outfit",
-                      fontSize: 16,
-                      color: Colors.text.primary,
-                    }}
-                  >
-                    Peso
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "outfit-Bold",
-                      fontSize: 18,
-                      color: Colors.text.secondary,
-                    }}
-                  >
-                    {pet?.peso + " Kg" || "Cargando..."}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Sexo */}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: Colors.background.secondaryButton,
-                  padding: 10,
-                  margin: 5,
-                  borderRadius: 10,
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/sex.png")}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginRight: 10,
-                  }}
-                />
-                <View>
-                  <Text
-                    style={{
-                      fontFamily: "outfit",
-                      fontSize: 16,
-                      color: Colors.text.primary,
-                    }}
-                  >
-                    Sexo
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "outfit-Bold",
-                      fontSize: 18,
-                      color: Colors.text.secondary,
-                    }}
-                  >
-                    {pet?.sexo || "Cargando..."}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Acerca de la mascota */}
-          <View
-            style={{
-              padding: 20,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "outfit-Bold",
-                fontSize: 20,
-                color: Colors.text.primary,
-              }}
-            >
-              Acerca de {pet?.nombre || "Cargando..."}
-            </Text>
-            <Text
-              numberOfLines={readMore ? 3 : undefined}
-              style={{
-                fontFamily: "outfit",
-                fontSize: 16,
-                color: Colors.text.secondary,
-                paddingTop: 10,
-              }}
-            >
-              {pet?.descripcion || "Cargando..."}
-            </Text>
-            {readMore && (
-              <Pressable onPress={() => setReadMore(false)}>
-                <Text
-                  style={{
-                    fontFamily: "outfit",
-                    fontSize: 14,
-                    color: Colors.text.disabled,
-                  }}
-                >
-                  Leer más
-                </Text>
-              </Pressable>
-            )}
-          </View>
-
-          {/* Detalles del dueño */}
-          <View
-            style={{
-              marginHorizontal: 20,
-              paddingHorizontal: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              borderWidth: 1,
-              borderRadius: 15,
-              padding: 10,
-              borderColor: Colors.background.primaryButton,
-              backgroundColor: Colors.background.paper,
-              justifyContent: "space-between",
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <Image
-                source={
-                  userData?.imagen
-                    ? { uri: userData.imagen }
-                    : require("../../assets/images/adaptive-icon.png")
-                }
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 99,
-                  marginRight: 10,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "outfit-Bold",
-                    fontSize: 17,
-                    color: Colors.text.primary,
-                  }}
-                >
-                  {userData?.nombre || "Cargando..."}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "outfit",
-                    fontSize: 14,
-                    color: Colors.text.secondary,
-                  }}
-                >
-                  Dueño
-                </Text>
-              </View>
-            </View>
-            <Icon
-              name="send"
-              size={24}
-              color={Colors.background.dark}
+          {petData ? (
+            <PetAbout
+              name={petData.nombre}
+              description={petData.descripcion}
+              readMore={readMore}
+              onToggleReadMore={() => setReadMore(!readMore)}
             />
-          </View>
+          ) : (
+            <SkeletonItem width={300} height={120} borderRadius={10} style={{ alignSelf: "center", marginVertical: 10 }} />
+          )}
 
-          {/* Espacio adicional */}
-          <View
-            style={{
-              height: 70,
-            }}
-          />
+          {userData ? (
+            <UserInfo
+              userName={userData.nombre || "Cargando..."}
+              userImage={userData.imagen}
+            />
+          ) : (
+            <SkeletonItem width={300} height={60} borderRadius={10} style={{ alignSelf: "center", marginVertical: 10 }} />
+          )}
+
+          <View style={styles.bottomSpacing} />
         </ScrollView>
-
-        {/* Botón "Adoptame" */}
-        {/* <View
-          style={{
-            position: "absolute",
-            width: "100%",
-            bottom: 0,
-          }}
-        >
-          <TouchableOpacity
-            style={{
-              padding: 15,
-              backgroundColor: Colors.primary.main,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                fontFamily: "outfit-Bold",
-                fontSize: 20,
-              }}
-            >
-              Adoptame
-            </Text>
-          </TouchableOpacity>
-        </View> */}
       </View>
     </SafeAreaView>
   );
-};
+}
 
-export default PetDetails;
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  innerContainer: { flex: 1 },
+  bottomSpacing: { height: 70 },
+});
