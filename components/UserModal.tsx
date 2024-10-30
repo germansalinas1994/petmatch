@@ -2,17 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import SkeletonItem from './SkeletonItem';
 import { Image } from "react-native-expo-image-cache";
+import { User } from '@/types/index';
 
 type UserModalProps = {
   visible: boolean;
   onClose: () => void;
-  user: { 
-    nombre: string; 
-    imagen: string; 
-    localidad: string;
-    edad: number;
-    descripcion: string;
-  } | null;
+  user: User | null;
+
 };
 
 export default function UserModal({ visible, onClose, user }: UserModalProps) {
@@ -42,7 +38,7 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
               <SkeletonItem width={100} height={100} borderRadius={50} />
             )}
             <Image
-              uri={user.imagen}
+              uri={user.imagen || ''}
               style={styles.userImage}
               onLoad={() => setImageLoading(false)}
               transitionDuration={300} // Añadir una transición suave

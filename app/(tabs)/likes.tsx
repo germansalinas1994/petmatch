@@ -9,49 +9,70 @@ import {
 } from "react-native";
 import Header from "../../components/Header";
 import { db } from "../../config/FirebaseConfig";
-import { collection, onSnapshot, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  DocumentData,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "../../components/SkeletonItem";
 import Colors from "../../constants/Colors";
 import UserModal from "../../components/UserModal";
-
-type User = {
-  id: string;
-  nombre: string;
-  imagen: string;
-  localidad: string;
-  edad: number;
-  descripcion: string;
-};
+import { User } from "@/types/index";
 
 export default function Likes() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const hardcodedPetId = "2Gedud8sPt2EakcO19Cf";
 
   useEffect(() => {
-    // Usar onSnapshot para escuchar cambios en tiempo real en la colección "users"
-    const usersCollection = collection(db, "users");
-    const subscriber = onSnapshot(usersCollection, (snapshot) => {
-      const usersList = snapshot.docs.map((doc) => {
-        const data = doc.data() as DocumentData;
-        return {
-          id: doc.id,
-          ...doc.data(),
-          // tambien se puede hacer asi
-          // id: doc.id,
-          // nombre: data.nombre,
-          // imagen: data.imagen
-        } as User;
-      });
-      setUsers(usersList);
-      setLoading(false);
+    // Suscripción en tiempo real a `user_pets_likes_dislikes`
+    const likesCollection = collection(db, "user_pets_likes_dislikes");
+    const likesQuery = query(
+      likesCollection,
+      where("pet_id", "==", hardcodedPetId),
+      where("status", "==", "like")
+    );
+
+    const unsubscribeLikes = onSnapshot(likesQuery, (likesSnapshot) => {
+      //tiene el id de los usuarios que dieron like
+      const likedUserIds = likesSnapshot.docs.map((doc) => doc.data().user_id);
+
+      if (likedUserIds.length > 0) {
+        // Segunda suscripción en tiempo real a la colección `users`
+        const usersCollection = collection(db, "users");
+        const userQuery = query(
+          usersCollection,
+          //con el __name__ se puede hacer una query con un array de ids
+          where("__name__", "in", likedUserIds)
+        );
+
+        const unsubscribeUsers = onSnapshot(userQuery, (userSnapshot) => {
+          const usersList = userSnapshot.docs.map((doc) => ({
+            user_id: doc.id,
+            ...doc.data(),
+          })) as User[];
+
+          setUsers(usersList);
+          setLoading(false);
+        });
+
+        // Limpiar suscripción de `users` al desmontar
+        return () => unsubscribeUsers();
+      } else {
+        setUsers([]); // Si no hay likes, vacía la lista
+        setLoading(false);
+      }
     });
 
-    // Cleanup: Desuscribirse de los cambios cuando el componente se desmonte
-    return () => subscriber();
-  }, []);
+    // Limpiar suscripción de `likes` al desmontar
+    return () => unsubscribeLikes();
+  }, [hardcodedPetId]);
 
   const renderSkeleton = () => (
     <View style={styles.userCard}>
@@ -71,7 +92,7 @@ export default function Likes() {
   );
 
   const openModal = (user: User) => {
-    setSelectedUser(user); // Pasar directamente el objeto user
+    setSelectedUser(user);
     setModalVisible(true);
   };
 
@@ -83,7 +104,7 @@ export default function Likes() {
   const renderUserItem = ({ item }: { item: User }) => (
     <View style={styles.userCard}>
       <TouchableOpacity onPress={() => openModal(item)}>
-        <Image uri={item.imagen} style={styles.profileImage} />
+        <Image uri={item.imagen || ""} style={styles.profileImage} />
       </TouchableOpacity>
 
       <Text style={styles.userName}>{item.nombre}</Text>
@@ -94,24 +115,22 @@ export default function Likes() {
     <View>
       <Header />
       {loading ? (
-        // Renderizar una lista de skeletons mientras los datos se cargan
         <FlatList
-          data={Array(10).fill({})} // Crear un array de longitud 10 para los skeletons
+          data={Array(10).fill({})} 
           renderItem={renderSkeleton}
           keyExtractor={(_, index) => index.toString()}
         />
       ) : (
-        // Renderizar la lista de usuarios una vez que los datos se hayan cargado
         <>
           <FlatList
             data={users}
             renderItem={renderUserItem}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.user_id}
           />
           <UserModal
             visible={modalVisible}
             onClose={closeModal}
-            user={selectedUser}
+            user={selectedUser || null}
           />
         </>
       )}
@@ -144,91 +163,3 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
-
-// // Likes.tsx
-// import React from 'react';
-// import { View, StyleSheet, Text } from 'react-native';
-// import Header from "../../components/Header";
-// import { db } from "../../config/FirebaseConfig";
-// import { collection, onSnapshot, DocumentData } from "firebase/firestore";
-// import { Image } from 'react-native-expo-image-cache';
-// import DataList from '../../components/DataList';
-// import SkeletonItem from '../../components/SkeletonItem';
-// import Colors from '../../constants/Colors';
-
-// type User = {
-//   id: string;
-//   nombre: string;
-//   imagen: string;
-// };
-
-// export default function Likes() {
-//   const fetchUsers = (): Promise<User[]> => {
-//     return new Promise((resolve) => {
-//       const usersCollection = collection(db, "users");
-//       const subscriber = onSnapshot(usersCollection, (snapshot) => {
-//         const usersList = snapshot.docs.map((doc) => {
-//           const data = doc.data() as DocumentData;
-//           return {
-//             id: doc.id,
-//             nombre: data.nombre ?? 'Unknown', // Default if 'nombre' is not available
-//             imagen: data.imagen ?? '', // Default if 'imagen' is not available
-//           } as User;
-//         });
-//         resolve(usersList);
-//       });
-//     });
-//   };
-
-//   const renderSkeleton = () => (
-//     <View style={styles.userCard}>
-//       <SkeletonItem width={50} height={50} borderRadius={25} style={styles.skeletonImage} />
-//       <SkeletonItem width={100} height={20} borderRadius={5} style={styles.skeletonText} />
-//     </View>
-//   );
-
-//   const renderUserItem = ({ item }: { item: User }) => (
-//     <View style={styles.userCard}>
-//       <Image uri={item.imagen} style={styles.profileImage} />
-//       <Text style={styles.userName}>{item.nombre}</Text>
-//     </View>
-//   );
-
-//   return (
-//     <View>
-//       <Header />
-//       <DataList<User>
-//         fetchData={fetchUsers}
-//         renderItem={renderUserItem}
-//         renderSkeleton={renderSkeleton}
-//         itemKeyExtractor={(item) => item.id}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   userCard: {
-//     flexDirection: "row",
-//     padding: 10,
-//     alignItems: "center",
-//     borderBottomWidth: 1,
-//     borderBottomColor: Colors.divider,
-//   },
-//   profileImage: {
-//     width: 50,
-//     height: 50,
-//     borderRadius: 25,
-//     marginRight: 10,
-//   },
-//   userName: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   skeletonImage: {
-//     marginRight: 10,
-//   },
-//   skeletonText: {
-//     marginLeft: 10,
-//   },
-// });
