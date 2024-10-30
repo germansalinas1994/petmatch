@@ -13,10 +13,11 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Header from '../../components/Header';
-import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../config/FirebaseConfig';
 
 type User = {
@@ -86,39 +87,63 @@ const PetScreen = () => {
     setAddPetModalVisible(false);
   };
 
+  const handleSavePet = async () => {
+    const { nombre, direccion, tipo, edad, peso } = petFormData;
+
+    if (!nombre || !direccion || !tipo) {
+      Alert.alert('Error', 'Por favor, complete todos los campos obligatorios.');
+      return;
+    }
+
+    try {
+      const petRef = doc(collection(db, 'pets'));
+      await setDoc(petRef, {
+        ...petFormData,
+        userId: selectedUser?.id,
+      });
+
+      Alert.alert('Éxito', 'La mascota se ha guardado correctamente.');
+      closeAddPetModal();
+    } catch (error) {
+      console.error('Error al guardar la mascota: ', error);
+      Alert.alert('Error', 'Hubo un problema al guardar la mascota.');
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.screen}>
         <Header />
         <View style={styles.card}>
-        <ScrollView contentContainerStyle={styles.container}>
-          <TouchableOpacity style={styles.userIconButton} onPress={handleUserIconPress}>
-            {selectedUser && selectedUser.imagen ? (
-              <Image source={{ uri: selectedUser.imagen }} style={styles.userIconImage} />
-            ) : (
-              <Ionicons name="person-circle-outline" size={40} color="#555" />
-            )}
-          </TouchableOpacity>
+          <ScrollView contentContainerStyle={styles.container}>
+            <TouchableOpacity style={styles.userIconButton} onPress={handleUserIconPress}>
+              {selectedUser && selectedUser.imagen ? (
+                <Image source={{ uri: selectedUser.imagen }} style={styles.userIconImage} />
+              ) : (
+                <Ionicons name="person-circle" size={100} color="#333333"/>
+              )}
+              <Text style={styles.usernameText}>{selectedUser ? selectedUser.nombre : 'Usuario'}</Text>
+            </TouchableOpacity>
 
-          {selectedUser ? (
-            petInfo ? (
-              <View style={styles.petInfo}>
-                <Image source={{ uri: petInfo.foto }} style={styles.petImage} />
-                <Text style={styles.petName}>{petInfo.nombre}</Text>
-                <Text style={styles.petAddress}>{petInfo.direccion}</Text>
-              </View>
+            {selectedUser ? (
+              petInfo ? (
+                <View style={styles.petInfo}>
+                  <Image source={{ uri: petInfo.foto }} style={styles.petImage} />
+                  <Text style={styles.petName}>{petInfo.nombre}</Text>
+                  <Text style={styles.petAddress}>{petInfo.direccion}</Text>
+                </View>
+              ) : (
+                <View style={styles.addPetContainer}>
+                  <Text style={styles.message}>¡Carga tu primera mascota!</Text>
+                  <TouchableOpacity style={styles.addButton} onPress={handleAddPet}>
+                    <Ionicons name="add-circle" size={50} color="#2196F3" />
+                  </TouchableOpacity>
+                </View>
+              )
             ) : (
-              <View style={styles.addPetContainer}>
-                <Text style={styles.message}>¡Carga tu primera mascota!</Text>
-                <TouchableOpacity style={styles.addButton} onPress={handleAddPet}>
-                  <Ionicons name="add-circle" size={50} color="#2196F3" />
-                </TouchableOpacity>
-              </View>
-            )
-          ) : (
-            <Text style={styles.message}>No hay mascota, por favor selecciona un usuario</Text>
-          )}
-        </ScrollView>
+              <Text style={styles.message}>No hay mascota, por favor selecciona un usuario</Text>
+            )}
+          </ScrollView>
         </View>
 
         <Modal
@@ -170,6 +195,7 @@ const PetScreen = () => {
                         onChangeText={(text) => setPetFormData({ ...petFormData, [field]: text })}
                         placeholder={`Ingrese ${field}`}
                         placeholderTextColor="#888"
+                        keyboardType={field === 'edad' || field === 'peso' ? 'numeric' : 'default'}
                       />
                     </View>
                   ))}
@@ -178,7 +204,7 @@ const PetScreen = () => {
                   <TouchableOpacity style={styles.cancelButton} onPress={closeAddPetModal}>
                     <Text style={styles.buttonText}>Cancelar</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.saveButton}>
+                  <TouchableOpacity style={styles.saveButton} onPress={handleSavePet}>
                     <Text style={styles.buttonText}>Guardar</Text>
                   </TouchableOpacity>
                 </View>
@@ -206,8 +232,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   container: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
-  userIconButton: { alignContent: 'center' },
-  userIconImage: { width: 40, height: 40, borderRadius: 20 },
+  userIconButton: { alignContent: 'center', alignItems: 'center' }, // Alinea el contenido en el centro
+  userIconImage: { width: 100, height: 100, borderRadius: 50 },
+  usernameText: { fontSize: 16, color: '#333', marginTop: 8 }, // Texto para el nombre del usuario
   message: { padding: 50, fontSize: 18, color: '#555', textAlign: 'center' },
   addPetContainer: { alignItems: 'center' },
   addButton: { marginTop: 10 },
@@ -226,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 8,
     padding: 16,
-    alignItems: 'center',
+    alignItems: 'stretch', 
   },
   scrollContainer: { paddingVertical: 8 },
   modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
@@ -256,8 +283,15 @@ const styles = StyleSheet.create({
   userItem: { flexDirection: 'row', alignItems: 'center', padding: 10 },
   userItemImage: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   userItemName: { fontSize: 16, color: '#333' },
-  closeButton: { marginTop: 16 },
-  closeButtonText: { fontSize: 16, color: '#2196F3' },
+  closeButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#f44336',
+    borderRadius: 5, 
+    alignItems: 'center' 
+  },
+  closeButtonText: { fontSize: 16, color: 'white' },
 });
 
 export default PetScreen;
