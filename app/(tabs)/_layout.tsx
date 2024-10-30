@@ -45,6 +45,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="new-pet"
+        options={{
+          title: "Mascota",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={28} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
