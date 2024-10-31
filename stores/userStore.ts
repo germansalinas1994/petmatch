@@ -8,12 +8,14 @@ interface UserStore {
   name: string | null;
   email: string | null;
   imagen: string | null;
+  rol: string | null;
   isAuthenticated: boolean;
   setIdUser: (idUser: string) => void;
   setToken: (token: string) => void;
   setEmail: (email: string) => void;
   setImagen: (imagen: string) => void;
   setName: (name: string) => void;
+  setRol: (rol: string) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   clearUser: () => void;
   validToken: () => boolean; // Función para validar el token
@@ -26,6 +28,7 @@ const useUserStore = create<UserStore>((set, get) => ({
   imagen: null, // Estado inicial de la imagen
   isAuthenticated: false, // Estado inicial de autenticación
   name: null, // Estado inicial del nombre
+  rol: null, // Estado inicial del rol
 
   setIdUser: (idUser: string) => set({ idUser }), // Función para actualizar el idUser
   // Función para actualizar el token
@@ -36,12 +39,14 @@ const useUserStore = create<UserStore>((set, get) => ({
 
   setImagen: (imagen: string) => set({ imagen }),
 
+  setRol: (rol: string) => set({ rol }),
+
   setIsAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }), // Función para actualizar el estado de autenticación
 
   setName: (name: string) => set({ name }), // Función para actualizar el nombre
 
   // Función para limpiar el estado (logout)
-  clearUser: () => set({ token: null, email: null, idUser: null, imagen: null, isAuthenticated: false, name: null }),
+  clearUser: () => set({ token: null, email: null, idUser: null, imagen: null, isAuthenticated: false, name: null, rol: null }),
 
   // Función para validar el token globalmente
   validToken: () => {

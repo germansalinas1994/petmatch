@@ -7,7 +7,8 @@ export interface User {
     imagen?: string;
     localidad: string;
     descripcion: string;
-    edad: number
+    edad: number;
+    rol: string;
     createdAt: Date;
   } 
   

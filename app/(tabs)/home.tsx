@@ -7,8 +7,8 @@ import { doc, collection, setDoc, where, getDocs, query } from "firebase/firesto
 import LoadingIndicator from "@/components/Loading";
 
 export default function HomeScreen() {
-  const { user, authorize } = useAuth0();
-  const { setEmail, validToken, setIdUser, token, email } = useUserStore();
+  const { user } = useAuth0();
+  const { setEmail, validToken, setIdUser, token, setRol } = useUserStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const [showRoleForm, setShowRoleForm] = useState(false);
 
@@ -31,15 +31,15 @@ export default function HomeScreen() {
 
   const getAccessToken = async () => {
     if (validToken()) {
-      await checkOrCreateUser(user?.email || "", { name: user?.name || "" });
+      await checkOrCreateUser(user?.mail || "");
     } else {
       throw new Error("El token no es válido");
     }
   };
 
-  const checkOrCreateUser = async (email: string, userData: { name: string }) => {
+  const checkOrCreateUser = async (email: string) => {
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
+    const q = query(usersRef, where("mail", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -47,7 +47,6 @@ export default function HomeScreen() {
       const newUser = doc(usersRef);
       await setDoc(newUser, {
         email: email,
-        name: userData.name,
         createdAt: new Date(),
       });
       setIdUser(newUser.id);
@@ -57,6 +56,7 @@ export default function HomeScreen() {
       setIdUser(userDoc.id);
       const userData = userDoc.data();
       setShowRoleForm(!userData.role); // Muestra el formulario si el usuario no tiene rol
+      setRol(userData.rol);
     }
     setEmail(email);
   };
