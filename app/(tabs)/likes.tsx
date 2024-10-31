@@ -113,7 +113,7 @@ export default function Likes() {
 
   return (
     <View>
-      <Header />
+      <Header title="Interesados" />
       {loading ? (
         <FlatList
           data={Array(10).fill({})} 

@@ -8,7 +8,8 @@ export default {
     paper: "#F3E8DD", // Color for cards or modals
     dark: "#643131", // Dark color for background
     primaryButton: "#A68B76", // Primary color for buttons
-    secondaryButton: "#FBEADD",
+    secondaryButton: "#7E6959",
+  
     clearGray: "#F5F5F5",
 
   },
