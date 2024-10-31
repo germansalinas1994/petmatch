@@ -11,12 +11,12 @@ interface ButtonsProps {
 export default function Buttons({ onLike, onDislike }: ButtonsProps) {
   return (
     <View style={styles.buttonsContainer}>
-      <Pressable style={styles.errorButton} onPress={onDislike}>
+      {/* <Pressable style={styles.errorButton} onPress={onDislike}>
         <Icon name="times" size={30} color={Colors.text.white} />
-      </Pressable>
+      </Pressable> */}
 
       <Pressable style={styles.successButton} onPress={onLike}>
-        <Icon name="heart" size={30} color={Colors.text.white} />
+        <Icon name="heart" size={40} color={Colors.text.white} />
       </Pressable>
     </View>
   );

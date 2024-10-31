@@ -94,7 +94,7 @@ export default function Home() {
                     ? Colors.background.secondaryButton // Color al presionar
                     : Colors.background.primaryButton, // Color normal
                   shadowOffset: { width: 0, height: pressed ? 2 : 5 },
-                  shadowOpacity: pressed ? 0.5 : 0.3,
+                  shadowOpacity: pressed ? 0.5 : 0.3, 
                   shadowRadius: pressed ? 3 : 6,
                   elevation: pressed ? 2 : 5,
                 },

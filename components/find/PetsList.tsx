@@ -23,7 +23,7 @@ export default function PetList({ pets, onLoad,handleSelectPet }: PetListProps) 
       data={pets}
       horizontal
       pagingEnabled
-      scrollEnabled={false}
+      scrollEnabled={true}
       showsHorizontalScrollIndicator={false}
       renderItem={({ item }) => (
         <Link
