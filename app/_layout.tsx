@@ -33,6 +33,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
           </Stack>
+          
           <FlashMessage position="top" />
         </View>
       </Auth0Provider>

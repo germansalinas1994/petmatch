@@ -127,7 +127,7 @@ export default function UserForm({
           style={styles.submitButton}
         >
           <Text style={styles.buttonText}>
-            {defaultValues ? "Actualizar Hábito" : "Guardar Hábito"}
+            {defaultValues ? "Guardar" : "Guardar"}
           </Text>
         </TouchableOpacity>
       </View>

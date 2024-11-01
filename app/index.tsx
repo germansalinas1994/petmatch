@@ -9,16 +9,23 @@ import {
   SafeAreaView,
 } from "react-native";
 import Colors from "../constants/Colors";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth0 } from "react-native-auth0";
 import { useRouter } from "expo-router";
 import LoadingIndicator from "@/components/Loading";
 import useUserStore from "@/stores/userStore";
+import { db } from "@/config/FirebaseConfig";
+import {
+  doc,
+  collection,
+  setDoc,
+  where,
+  getDocs,
+  query,
+} from "firebase/firestore";
 
 const { width, height } = Dimensions.get("window");
 
 export default function Home() {
-
   const { authorize, user, isLoading, getCredentials } = useAuth0();
   const {
     token,
@@ -27,24 +34,30 @@ export default function Home() {
     setImagen,
     setIsAuthenticated,
     setName,
-    setEmail
+    setEmail,
+    setIdUser,
   } = useUserStore();
 
   const router = useRouter();
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (token && validToken()) {
-        router.replace("/(tabs)/home");
-      } else if (user) {
-        await setGlobalUser();
-        router.replace("/(tabs)/home");
+      try {
+        if (token && validToken()) {
+          router.replace("/home");
+        } else if (user) {
+          await setGlobalUser();
+          router.replace("/home");
+        }
+      } catch (error) {
+        console.error("Error durante la autenticación:", error);
       }
     };
-    if (router) {
+
+    if (!isLoading && (user || token)) {
       checkAuth();
     }
-  }, [user, token]);
+  }, [user, token, isLoading]);
 
   const setGlobalUser = async () => {
     try {
@@ -54,11 +67,33 @@ export default function Home() {
         const userPicture = user?.picture ?? "";
         setImagen(userPicture);
         setIsAuthenticated(true);
-        setName(user?.name ?? "");
         setEmail(user?.email ?? "");
+        console.log("User:", user);
+        console.log(user?.email);
+        
+        // Verificar o crear usuario en Firestore
+        await checkOrCreateUser(user?.email || "");
       }
     } catch (error) {
       console.log("Error al autorizar:", error);
+    }
+  };
+
+  const checkOrCreateUser = async (email : string) => {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("mail", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      const newUser = doc(usersRef);
+      await setDoc(newUser, {
+        mail: email,
+        createdAt: new Date(),
+      });
+      setIdUser(newUser.id);
+    } else {
+      const userDoc = querySnapshot.docs[0];
+      setIdUser(userDoc.id);
     }
   };
 
@@ -92,10 +127,10 @@ export default function Home() {
                 styles.button,
                 {
                   backgroundColor: pressed
-                    ? Colors.background.secondaryButton // Color al presionar
-                    : Colors.background.primaryButton, // Color normal
+                    ? Colors.background.secondaryButton
+                    : Colors.background.primaryButton,
                   shadowOffset: { width: 0, height: pressed ? 2 : 5 },
-                  shadowOpacity: pressed ? 0.5 : 0.3, 
+                  shadowOpacity: pressed ? 0.5 : 0.3,
                   shadowRadius: pressed ? 3 : 6,
                   elevation: pressed ? 2 : 5,
                 },

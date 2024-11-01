@@ -116,12 +116,12 @@ export default function Likes() {
       <Header title="Interesados" />
       {loading ? (
         <FlatList
-          data={Array(10).fill({})} 
+          data={Array(10).fill({})}
           renderItem={renderSkeleton}
           keyExtractor={(_, index) => index.toString()}
         />
       ) : (
-        <>
+        <View style={styles.container}>
           <FlatList
             data={users}
             renderItem={renderUserItem}
@@ -132,13 +132,15 @@ export default function Likes() {
             onClose={closeModal}
             user={selectedUser || null}
           />
-        </>
+        </View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+  },
   userCard: {
     flexDirection: "row",
     padding: 10,

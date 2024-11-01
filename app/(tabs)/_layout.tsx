@@ -16,17 +16,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors.secondary.dark,
       }}
     >
-      {/* <Tabs.Screen name="home" options={{title:'Home',tabBarStyle: { display: 'none' } , tabBarIcon:() => <Ionicons name="home" size={24} color={Colors.secondary.contrastText} />}} /> */}
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          // tabBarStyle: { display: "none" },
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={28} color={color} />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="find"
         options={{

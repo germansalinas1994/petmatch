@@ -17,7 +17,7 @@ interface MenuItem {
 }
 
 export default function Profile() {
-  const { name, imagen, email, clearUser } = useUserStore();
+  const { nombre, imagen, mail, clearUser } = useUserStore();
   const { clearSession } = useAuth0();
   const router = useRouter();
 
@@ -47,9 +47,9 @@ export default function Profile() {
     <SafeAreaView style={styles.safeArea}>
         <Header showBackButton={false} title="Perfil" />
         <UserProfile
-          name={name || "Usuario Desconocido"}
+          name={nombre || "No hay nombre disponible"}
           imageUri={imagen}
-          email={email || "No hay correo disponible"}
+          email={mail || "No hay correo disponible"}
         />
         <ProfileMenu menuItems={menuItems} onPressMenu={onPressMenu} />
     </SafeAreaView>

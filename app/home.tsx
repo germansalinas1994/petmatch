@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useAuth0, User } from "react-native-auth0";
 import useUserStore from "@/stores/userStore";
 import { db } from "@/config/FirebaseConfig";
@@ -7,47 +7,72 @@ import {
   doc,
   collection,
   setDoc,
-  where,
   getDocs,
   query,
+  where,
 } from "firebase/firestore";
 import LoadingIndicator from "@/components/Loading";
 import Form from "@/components/profile/UserForm";
-import { showMessage } from "react-native-flash-message"; // Importar Flash Message
+import { showMessage } from "react-native-flash-message";
 import useRolesStore from "@/stores/rolesStore";
 import Header from "@/components/Header";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
-  const { user } = useAuth0();
+  const router = useRouter();
+  const { user, isLoading: isAuth0Loading } = useAuth0();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { setEmail, validToken, setIdUser, token, setRol, email, idUser } =
-    useUserStore();
+  const {
+    validToken,
+    setIdUser,
+    setRol,
+    idUser,
+    setName,
+    setDescripcion,
+  } = useUserStore();
   const { setRoles, roles } = useRolesStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const [showRoleForm, setShowRoleForm] = useState(false);
 
-  // Carga inicial del usuario una vez que se valida el token
   useEffect(() => {
-    if (token && validToken() && !isLoaded) {
-      setIsLoaded(true);
-      handleUserCheck();
+    if (user && validToken()) {
+      fetchData();
     }
-  }, [token]);
+  }, [user]); // Solo se ejecuta cuando el usuario cambia
 
-  // Carga inicial de roles solo una vez al montar el componente
-  useEffect(() => {
-    if (!roles.length) {
-      getRoles();
-    }
-  }, []);
-
-  const handleUserCheck = async () => {
+  const fetchData = async () => {
+    setIsLoaded(true);
     try {
-      await getAccessToken();
+      await handleUserCheck();
+      if (roles.length === 0) {
+        getRoles();
+      }
     } catch (error) {
-      console.error("Error al obtener el token o las categorías:", error);
+      console.error("Error al obtener los roles:", error);
     } finally {
       setIsLoaded(false);
+    }
+  };
+
+  const handleUserCheck = async () => {
+    // Ahora simplemente asume que el usuario ya fue creado en Firestore
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("mail", "==", user?.email || ""));
+
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      setIdUser(userDoc.id);
+      const userData = userDoc.data();
+      setShowRoleForm(!userData.rol_id);
+
+      // Redirigir si el rol ya está configurado
+      if (userData.rol_id) {
+        setRol(userData.rol);
+        setName(userData.nombre);
+        setDescripcion(userData.descripcion);
+        router.replace("/find");
+      }
     }
   };
 
@@ -64,50 +89,25 @@ export default function HomeScreen() {
     setRoles(rolesData);
   };
 
-  const getAccessToken = async () => {
-    if (validToken()) {
-      await checkOrCreateUser(email || "");
-    } else {
-      throw new Error("El token no es válido");
-    }
-  };
-
-  const checkOrCreateUser = async (email: string) => {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("mail", "==", email));
-    const querySnapshot = await getDocs(q);
-
-    console.log(querySnapshot);
-
-    if (querySnapshot.empty) {
-      const newUser = doc(usersRef);
-      await setDoc(newUser, {
-        email: email,
-        createdAt: new Date(),
-      });
-      setIdUser(newUser.id);
-      setShowRoleForm(true);
-    } else {
-      const userDoc = querySnapshot.docs[0];
-      setIdUser(userDoc.id);
-      const userData = userDoc.data();
-      setShowRoleForm(!userData.rol_id);
-      setRol(userData.rol);
-    }
-    setEmail(email);
+  const updateUserData = async (data: User) => {
+    const userRef = doc(db, "users", idUser ? idUser : "");
+    await setDoc(userRef, data, { merge: true });
+    setRol(data.rol);
+    setName(data.nombre);
+    setDescripcion(data.descripcion);
   };
 
   const onSubmit = async (data: User, reset: () => void) => {
     setIsSubmitting(true);
     try {
-      const userRef = doc(db, "users", idUser ? idUser : ""); // Usa el ID del usuario actual
-      await setDoc(userRef, data, { merge: true }); // Actualiza los datos del usuario en Firestore
-      setShowRoleForm(false); // Oculta el formulario una vez actualizado
+      await updateUserData(data);
+      setShowRoleForm(false);
       showMessage({
         message: "Usuario actualizado correctamente",
         type: "success",
       });
-      reset(); // Reinicia el formulario
+      reset();
+      router.replace("/find");
     } catch (error) {
       console.error("Error al actualizar el usuario:", error);
       showMessage({
