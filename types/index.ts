@@ -3,12 +3,12 @@
 export interface User {
     user_id: string;
     nombre: string;
-    email: string;
+    mail: string;
     imagen?: string;
     localidad: string;
     descripcion: string;
     edad: number;
-    rol: string;
+    rol_id: string;
     createdAt: Date;
   } 
   
@@ -31,5 +31,12 @@ export interface User {
     status: "like" | "dislike";
     createdAt: Date;
   }
+
+  export interface Rol {
+    rol_id: string;
+    descripcion: string;
+    codigo: string;
+  }
+  
   
   

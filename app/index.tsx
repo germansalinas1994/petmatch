@@ -27,6 +27,7 @@ export default function Home() {
     setImagen,
     setIsAuthenticated,
     setName,
+    setEmail
   } = useUserStore();
 
   const router = useRouter();
@@ -54,6 +55,7 @@ export default function Home() {
         setImagen(userPicture);
         setIsAuthenticated(true);
         setName(user?.name ?? "");
+        setEmail(user?.email ?? "");
       }
     } catch (error) {
       console.log("Error al autorizar:", error);
@@ -62,7 +64,6 @@ export default function Home() {
 
   const handleLogin = async () => {
     try {
-      console.log("Login pressed");
       await authorize();
     } catch (error) {
       console.log("Login error:", error);

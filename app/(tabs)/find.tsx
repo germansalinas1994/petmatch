@@ -133,7 +133,7 @@ export default function Find() {
         {!isLoading && pets.length > 0 && (
           <Buttons
             onLike={() => handleInteraction("like")}
-            onDislike={() => handleInteraction("dislike")}
+            // onDislike={() => handleInteraction("dislike")}
           />
         )}
       </View>
