@@ -17,7 +17,7 @@ interface MenuItem {
 }
 
 export default function Profile() {
-  const { nombre, imagen, mail, clearUser } = useUserStore();
+  const { nombre, imagen, mail, clearUser, codigoRol } = useUserStore();
   const { clearSession } = useAuth0();
   const router = useRouter();
 

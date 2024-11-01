@@ -9,7 +9,8 @@ interface UserStore {
   mail: string | null;
   descripcion: string | null;
   imagen: string | null;
-  rol: string | null;
+  id_rol: string | null;
+  codigoRol: string | null;
   isAuthenticated: boolean;
   setIdUser: (idUser: string) => void;
   setToken: (token: string) => void;
@@ -18,6 +19,7 @@ interface UserStore {
   setImagen: (imagen: string) => void;
   setName: (name: string) => void;
   setRol: (rol: string) => void;
+  setCodigoRol: (codigoRol: string) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   clearUser: () => void;
   validToken: () => boolean; // Función para validar el token
@@ -31,7 +33,8 @@ const useUserStore = create<UserStore>((set, get) => ({
   descripcion: null,
   isAuthenticated: false,
   nombre: null,
-  rol: null,
+  id_rol: null,
+  codigoRol: null,
 
   setIdUser: (idUser: string) => set({ idUser }),
 
@@ -44,7 +47,10 @@ const useUserStore = create<UserStore>((set, get) => ({
 
   setImagen: (imagen: string) => set({ imagen }),
 
-  setRol: (rol: string) => set({ rol }),
+  setRol: (id_rol: string) => set({ id_rol }),
+
+  setCodigoRol: (codigoRol: string) => set({ codigoRol }),
+
 
   setIsAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }),
 
@@ -60,7 +66,8 @@ const useUserStore = create<UserStore>((set, get) => ({
     imagen: null,
     isAuthenticated: false,
     nombre: null,
-    rol: null,
+    id_rol: null,
+    codigoRol: null,
     descripcion: null,
   }),
 

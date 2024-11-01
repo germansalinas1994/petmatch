@@ -70,7 +70,7 @@ export default function Home() {
         setEmail(user?.email ?? "");
         console.log("User:", user);
         console.log(user?.email);
-        
+
         // Verificar o crear usuario en Firestore
         await checkOrCreateUser(user?.email || "");
       }
@@ -79,7 +79,7 @@ export default function Home() {
     }
   };
 
-  const checkOrCreateUser = async (email : string) => {
+  const checkOrCreateUser = async (email: string) => {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("mail", "==", email));
     const querySnapshot = await getDocs(q);
@@ -113,7 +113,7 @@ export default function Home() {
           style={styles.image}
           resizeMode="contain"
         />
-        <View style={{ alignItems: "center", marginBottom: height * 0.6 }}>
+        <View style={styles.description}>
           <Text style={styles.title}>Listo para hacer un nuevo amigo?</Text>
           <Text style={styles.subtitle}>
             Sumate a adoptar una mascota, darle un hogar y hacerla feliz.
@@ -155,6 +155,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  description: {
+    alignItems: "center",
+    marginBottom: height * 0.6,
   },
   image: {
     width: width * 0.9,

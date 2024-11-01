@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { useAuth0, User } from "react-native-auth0";
+import { useAuth0 } from "react-native-auth0";
 import useUserStore from "@/stores/userStore";
 import { db } from "@/config/FirebaseConfig";
 import {
@@ -10,6 +10,7 @@ import {
   getDocs,
   query,
   where,
+  getDoc,
 } from "firebase/firestore";
 import LoadingIndicator from "@/components/Loading";
 import Form from "@/components/profile/UserForm";
@@ -17,6 +18,8 @@ import { showMessage } from "react-native-flash-message";
 import useRolesStore from "@/stores/rolesStore";
 import Header from "@/components/Header";
 import { useRouter } from "expo-router";
+import { RoleCodes } from "@/constants/roles";
+import { User } from "@/types/index";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -29,6 +32,8 @@ export default function HomeScreen() {
     idUser,
     setName,
     setDescripcion,
+    setCodigoRol,
+    codigoRol,
   } = useUserStore();
   const { setRoles, roles } = useRolesStore();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -38,14 +43,14 @@ export default function HomeScreen() {
     if (user && validToken()) {
       fetchData();
     }
-  }, [user]); // Solo se ejecuta cuando el usuario cambia
+  }, [user]);
 
   const fetchData = async () => {
     setIsLoaded(true);
     try {
       await handleUserCheck();
       if (roles.length === 0) {
-        getRoles();
+        await getRoles();
       }
     } catch (error) {
       console.error("Error al obtener los roles:", error);
@@ -55,23 +60,21 @@ export default function HomeScreen() {
   };
 
   const handleUserCheck = async () => {
-    // Ahora simplemente asume que el usuario ya fue creado en Firestore
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("mail", "==", user?.email || ""));
-
     const querySnapshot = await getDocs(q);
+
     if (!querySnapshot.empty) {
       const userDoc = querySnapshot.docs[0];
       setIdUser(userDoc.id);
       const userData = userDoc.data();
       setShowRoleForm(!userData.rol_id);
 
-      // Redirigir si el rol ya está configurado
       if (userData.rol_id) {
+        await searchCodigoRol(userData.rol_id);
         setRol(userData.rol);
         setName(userData.nombre);
         setDescripcion(userData.descripcion);
-        router.replace("/find");
       }
     }
   };
@@ -89,10 +92,19 @@ export default function HomeScreen() {
     setRoles(rolesData);
   };
 
+  const searchCodigoRol = async (rol_id: string) => {
+    const rolesRef = doc(db, "roles", rol_id);
+    const docSnap = await getDoc(rolesRef);
+    if (docSnap.exists()) {
+      setCodigoRol(docSnap.data().codigo);
+    } else {
+      console.log("No such document!");
+    }
+  };
+
   const updateUserData = async (data: User) => {
-    const userRef = doc(db, "users", idUser ? idUser : "");
+    const userRef = doc(db, "users", idUser || "");
     await setDoc(userRef, data, { merge: true });
-    setRol(data.rol);
     setName(data.nombre);
     setDescripcion(data.descripcion);
   };
@@ -102,12 +114,12 @@ export default function HomeScreen() {
     try {
       await updateUserData(data);
       setShowRoleForm(false);
+      await searchCodigoRol(data.rol_id); // Asegura que codigoRol esté actualizado
       showMessage({
         message: "Usuario actualizado correctamente",
         type: "success",
       });
       reset();
-      router.replace("/find");
     } catch (error) {
       console.error("Error al actualizar el usuario:", error);
       showMessage({
@@ -118,6 +130,19 @@ export default function HomeScreen() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    // Monitorea codigoRol para redirigir cuando esté listo
+    if (codigoRol) {
+      if (codigoRol === RoleCodes.Adoptante) {
+        router.replace("/find");
+      } else if (codigoRol === RoleCodes.Rescatista) {
+        router.replace("/(tabs)/profile");
+      } else {
+        router.replace("/");
+      }
+    }
+  }, [codigoRol, router]);
 
   return (
     <View style={styles.container}>

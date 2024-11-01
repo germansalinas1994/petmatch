@@ -21,7 +21,7 @@ interface HeaderProps {
 }
 
 export default function Header({ showBackButton = false, title }: HeaderProps) {
-  const { imagen, name } = useUserStore(); // Obtenemos la imagen del usuario de Zustand
+  const { imagen, nombre } = useUserStore(); // Obtenemos la imagen del usuario de Zustand
   const router = useRouter(); // Para manejar la navegación
 
   return (
@@ -44,7 +44,7 @@ export default function Header({ showBackButton = false, title }: HeaderProps) {
           ) : (
             <>
               <Text style={styles.primaryText}>Bienvenido</Text>
-              <Text style={styles.secondaryText}>{name}</Text>
+              <Text style={styles.secondaryText}>{nombre}</Text>
             </>
           )}
         </View>

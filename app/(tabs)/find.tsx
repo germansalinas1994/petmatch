@@ -25,8 +25,14 @@ import SkeletonItem from "@/components/SkeletonItem";
 import PetList from "@/components/find/PetsList";
 import NotFindPets from "@/components/find/NotFindPets";
 import { usePetStore } from "@/stores/petStore";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute"; // Importa el hook
+import { RoleCodes } from "@/constants/roles"; // Importa los códigos de roles
+
 
 export default function Find() {
+  useProtectedRoute(RoleCodes.Adoptante);
+
+
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
