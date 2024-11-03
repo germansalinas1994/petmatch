@@ -1,11 +1,16 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useFonts } from "expo-font";
-import LoadingIndicator from "../components/Loading"; // Ajusta la ruta según tu estructura de carpetas
+import LoadingIndicator from "../components/Loading"; 
 import { Auth0Provider } from "react-native-auth0";
 import FlashMessage from "react-native-flash-message";
 import { View } from "react-native";
+import { useEffect } from "react";
+import useUserStore from "@/stores/userStore";
+import { RoleCodes } from "@/constants/roles";
 
 export default function RootLayout() {
+  const router = useRouter();
+  const { codigoRol } = useUserStore();
   const domain: string | undefined = process.env.EXPO_PUBLIC_DOMAIN;
   const clientID: string | undefined = process.env.EXPO_PUBLIC_CLIENT_ID;
 
@@ -16,27 +21,38 @@ export default function RootLayout() {
     "outfit-Medium": require("../assets/fonts/Outfit-Medium.ttf"),
   });
 
-  // Si no hay configuración para Auth0, manejar el error de configuración
+  // Verificar configuración de Auth0
   if (!domain || !clientID) {
     console.error("Missing Auth0 configuration in environment variables");
-    return null; // Devuelve null o maneja el error de otra manera
+    return null;
   }
 
-  // Mostrar un indicador de carga mientras se cargan las fuentes
+  // Mostrar indicador de carga mientras se cargan las fuentes
   if (!fontsLoaded) {
     return <LoadingIndicator />;
-  } else {
-    return (
-      <Auth0Provider domain={domain} clientId={clientID}>
-        {/* Asegúrate de que el Auth0Provider tenga un único hijo */}
-        <View style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-          
-          <FlashMessage position="top" />
-        </View>
-      </Auth0Provider>
-    );
   }
+
+  return (
+    <Auth0Provider domain={domain} clientId={clientID}>
+      <View style={{ flex: 1 }}>
+        <RoleRedirect codigoRol={codigoRol != null ? codigoRol : ""} router={router} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+        <FlashMessage position="top" />
+      </View>
+    </Auth0Provider>
+  );
+}
+
+function RoleRedirect({ codigoRol, router }: { codigoRol: string | undefined; router: any }) {
+  useEffect(() => {
+    if (codigoRol === RoleCodes.Adoptante) {
+      router.replace("/(tabs)/adoptante");
+    } else if (codigoRol === RoleCodes.Rescatista) {
+      router.replace("/(tabs)/rescatista");
+    }
+  }, [codigoRol, router]);
+
+  return null;
 }

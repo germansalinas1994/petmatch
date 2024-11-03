@@ -7,11 +7,11 @@ import {
   StatusBar,
 } from "react-native";
 import React, { useState, useEffect } from "react";
-import Colors from "../../constants/Colors";
+import Colors from "@/constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Buttons from "@/components/find/Buttons";
 import AnimatedEffect from "@/components/find/AnimatedEffect";
-import { db } from "../../config/FirebaseConfig";
+import { db } from "@/config/FirebaseConfig";
 import {
   collection,
   addDoc,

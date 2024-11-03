@@ -1,50 +1,24 @@
-import { View, Text, Dimensions } from "react-native";
-import React from "react";
-import { Tabs } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import Colors from "../../constants/Colors";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
+import useUserStore from "@/stores/userStore"; // Ajusta la ruta según la ubicación de tu store
+import { RoleCodes } from "@/constants/roles"; // Ajusta la ruta según la estructura de constantes
 
-export default function TabLayout() {
-  const { width, height } = Dimensions.get("window");
+export default function GeneralTabsLayout() {
+  const router = useRouter();
+  const { codigoRol } = useUserStore();
+
+  useEffect(() => {
+    // Redirige al layout correspondiente basado en el rol
+    if (codigoRol === RoleCodes.Adoptante) {
+      router.replace("/(tabs)/adoptante");
+    } else if (codigoRol === RoleCodes.Rescatista) {
+      router.replace("/(tabs)/rescatista");
+    }
+  }, [codigoRol, router]);
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarInactiveTintColor: Colors.text.disabled,
-        tabBarActiveTintColor: Colors.secondary.dark,
-      }}
-    >
-
-      <Tabs.Screen
-        name="find"
-        options={{
-          title: "Encontrar",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="pets" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="likes"
-        options={{
-          title: "Interesados",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="heart" size={28} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Perfil",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-circle" size={28} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* Aquí no necesitamos especificar ninguna pantalla adicional */}
+    </Stack>
   );
 }

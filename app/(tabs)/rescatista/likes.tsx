@@ -7,8 +7,8 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import Header from "../../components/Header";
-import { db } from "../../config/FirebaseConfig";
+import Header from "@/components/Header";
+import { db } from "@/config/FirebaseConfig";
 import {
   collection,
   onSnapshot,
@@ -18,9 +18,9 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { Image } from "react-native-expo-image-cache";
-import SkeletonItem from "../../components/SkeletonItem";
-import Colors from "../../constants/Colors";
-import UserModal from "../../components/UserModal";
+import SkeletonItem from "@/components/SkeletonItem";
+import Colors from "@/constants/Colors";
+import UserModal from "@/components/UserModal";
 import { User } from "@/types/index";
 
 export default function Likes() {
