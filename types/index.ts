@@ -1,5 +1,7 @@
 // types/index.ts
 
+import { Ionicons } from "@expo/vector-icons";
+
 export interface User {
     user_id: string;
     nombre: string;
@@ -39,4 +41,9 @@ export interface User {
   }
   
   
-  
+  export interface MenuItem {
+    id: number;
+    name: string;
+    icon: keyof typeof Ionicons.glyphMap; // Tipamos icon para que solo acepte íconos válidos
+    path: string;
+  }
