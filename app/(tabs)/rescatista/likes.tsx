@@ -5,6 +5,7 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import Header from "@/components/Header";
 import { db } from "@/config/FirebaseConfig";
@@ -15,7 +16,6 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
 import Colors from "@/constants/Colors";
 import UserModal from "@/components/UserModal";
@@ -32,7 +32,9 @@ export default function Likes() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [petId, setPetId] = useState<string | null>(null);
-  const { idUser } = useUserStore();
+  const { idUser} = useUserStore();
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
 
   useEffect(() => {
     if (!idUser) {
@@ -108,7 +110,6 @@ export default function Likes() {
         setLoading(false); // Detener la carga si no hay usuarios que dieron like
       }
     });
-
     // Limpiar suscripción de `likes` al desmontar
     return () => unsubscribeLikes();
   }, [petId]);
@@ -141,9 +142,18 @@ export default function Likes() {
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
+    console.log("item", item),
     <View style={styles.userCard}>
       <TouchableOpacity onPress={() => openModal(item)}>
-        <Image uri={item.imagen || ""} style={styles.profileImage} />
+      <Image
+        source={
+          item.imagen
+            ? { uri: item.imagen }
+            : require('@/assets/images/default_user.jpg')
+        }
+        style={styles.profileImage}
+        onLoad={() => setIsImageLoaded(true)} 
+      />
       </TouchableOpacity>
       <Text style={styles.userName}>{item.nombre}</Text>
     </View>
