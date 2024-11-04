@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   backIcon: {
-    marginRight: 10,
   },
   titleContainer: {
     flex: 1, // Permite que el contenedor del título ocupe el espacio restante
