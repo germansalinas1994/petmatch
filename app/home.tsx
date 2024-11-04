@@ -135,9 +135,9 @@ export default function HomeScreen() {
     // Monitorea codigoRol para redirigir cuando esté listo
     if (codigoRol) {
       if (codigoRol === RoleCodes.Adoptante) {
-        router.replace("/find");
+        router.replace("/adoptante/find");
       } else if (codigoRol === RoleCodes.Rescatista) {
-        router.replace("/(tabs)/profile");
+        router.replace("/(tabs)/rescatista");
       } else {
         router.replace("/");
       }

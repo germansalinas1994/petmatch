@@ -1,38 +1,30 @@
-import { View, Text, Dimensions } from "react-native";
-import React from "react";
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "@/constants/Colors";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export default function TabLayoutRescatista() {
-  const { width, height } = Dimensions.get("window");
-
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: false, 
         tabBarInactiveTintColor: Colors.text.disabled,
         tabBarActiveTintColor: Colors.secondary.dark,
       }}
     >
-
-  
       <Tabs.Screen
         name="likes"
         options={{
           title: "Interesados",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }) => (
             <Ionicons name="heart" size={28} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
           title: "Perfil",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }) => (
             <Ionicons name="people-circle" size={28} color={color} />
           ),
         }}
