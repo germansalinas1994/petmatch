@@ -99,7 +99,7 @@ const PetScreen = () => {
       const petRef = doc(collection(db, 'pets'));
       await setDoc(petRef, {
         ...petFormData,
-        userId: selectedUser?.id,
+        user_id: selectedUser?.id,
       });
 
       Alert.alert('Éxito', 'La mascota se ha guardado correctamente.');
