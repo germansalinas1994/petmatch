@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     width: "48%", // Para que dos elementos se muestren por fila
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.background.secondaryButton,
+    backgroundColor: Colors.background.clearGray,
     padding: 10,
     marginVertical: 5,
     borderRadius: 10,

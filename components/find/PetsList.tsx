@@ -5,6 +5,7 @@ import {
   Pressable,
   Image,
   StyleSheet,
+  Text,
   Dimensions,
 } from "react-native";
 import { Link } from "expo-router";
@@ -17,18 +18,18 @@ type PetListProps = {
   handleSelectPet: (pet: Pet) => void; // Nueva prop
 };
 
-export default function PetList({ pets, onLoad,handleSelectPet }: PetListProps) {
+export default function PetList({ pets, onLoad, handleSelectPet }: PetListProps) {
   return (
     <FlatList
       data={pets}
       horizontal
       pagingEnabled
-      scrollEnabled={false}
+      scrollEnabled={true}
       showsHorizontalScrollIndicator={false}
       renderItem={({ item }) => (
         <Link
-        onPress={() => handleSelectPet(item)} // Llamada a handleSelectPet
-        href={{
+          onPress={() => handleSelectPet(item)} // Llamada a handleSelectPet
+          href={{
             pathname: "/pet-details/[petId]",
             params: { petId: item.pet_id },
           }}
@@ -40,6 +41,9 @@ export default function PetList({ pets, onLoad,handleSelectPet }: PetListProps) 
               style={styles.image}
               onLoad={onLoad}
             />
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoText}>{item.nombre}, {item.edad} años</Text>
+            </View>
           </Pressable>
         </Link>
       )}
@@ -65,5 +69,20 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  infoContainer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", 
+    paddingHorizontal: 50,
+    paddingVertical: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  infoText: {
+    color: Colors.text.white,
+    fontSize: 22, // Tamaño de texto adecuado para ser legible
+    fontWeight: "bold",
   },
 });

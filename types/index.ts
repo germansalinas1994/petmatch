@@ -1,13 +1,16 @@
 // types/index.ts
 
+import { Ionicons } from "@expo/vector-icons";
+
 export interface User {
     user_id: string;
     nombre: string;
-    email: string;
+    mail: string;
     imagen?: string;
     localidad: string;
     descripcion: string;
-    edad: number
+    edad: number;
+    rol_id: string;
     createdAt: Date;
   } 
   
@@ -30,5 +33,17 @@ export interface User {
     status: "like" | "dislike";
     createdAt: Date;
   }
+
+  export interface Rol {
+    rol_id: string;
+    descripcion: string;
+    codigo: string;
+  }
   
   
+  export interface MenuItem {
+    id: number;
+    name: string;
+    icon: keyof typeof Ionicons.glyphMap; // Tipamos icon para que solo acepte íconos válidos
+    path: string;
+  }
