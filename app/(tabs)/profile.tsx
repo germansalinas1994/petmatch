@@ -23,7 +23,7 @@ import { RoleCodes } from "@/constants/roles";
 import { MenuItem } from "@/types/index";
 
 export default function Profile() {
-  const { nombre, imagen, mail, clearUser, codigoRol } = useUserStore();
+  const { nombre, imagen, mail, clearUser, codigoRol, idUser } = useUserStore();
   const { clearSession } = useAuth0();
   const router = useRouter();
 
@@ -39,8 +39,14 @@ export default function Profile() {
       } catch (error) {
         console.error("Error al cerrar sesión:", error);
       }
+    }  else if (item.path === "/profile/edit") {
+      // Redirige a la pantalla de edición del perfil
+      router.push({
+        pathname: item.path,
+        params: { userId:  idUser}, // Pasa el ID de usuario
+      });
     } else {
-      router.push(item.path as any);
+      router.push(item.path);
     }
   };
 
