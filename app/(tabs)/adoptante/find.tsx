@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import Colors from "@/constants/Colors";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Buttons from "@/components/find/Buttons";
 import AnimatedEffect from "@/components/find/AnimatedEffect";
 import { db } from "@/config/FirebaseConfig";
@@ -20,30 +19,23 @@ import {
   where,
 } from "firebase/firestore";
 import { Pet } from "@/types";
-// import { Image } from "react-native-expo-image-cache";
 import SkeletonItem from "@/components/SkeletonItem";
 import PetList from "@/components/find/PetsList";
 import NotFindPets from "@/components/find/NotFindPets";
 import { usePetStore } from "@/stores/petStore";
-import { useProtectedRoute } from "@/hooks/useProtectedRoute"; // Importa el hook
-import { RoleCodes } from "@/constants/roles"; // Importa los códigos de roles
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { RoleCodes } from "@/constants/roles";
 import useUserStore from "@/stores/userStore";
-
-
 
 export default function Find() {
   useProtectedRoute(RoleCodes.Adoptante);
 
-
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
-  const {
-    idUser
-  } = useUserStore(); 
+  const [currentPetIndex, setCurrentPetIndex] = useState(0); // Estado para el índice actual
+  const { idUser } = useUserStore(); 
   const [pets, setPets] = useState<Pet[]>([]);
-  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const setSelectedPet = usePetStore((state) => state.setSelectedPet);
 
@@ -54,7 +46,6 @@ export default function Find() {
     );
 
     const unsubscribe = onSnapshot(userQuery, (snapshot) => {
-      //me quedo con los ids de las mascotas evaluadas
       const newEvaluatedIds = new Set<string>(
         snapshot.docs.map((doc) => doc.data().pet_id)
       );
@@ -94,20 +85,22 @@ export default function Find() {
   const handleInteraction = async (status: string) => {
     if (pets.length === 0) return;
 
-    const currentPetId = pets[0].pet_id;
+    const currentPetId = pets[currentPetIndex].pet_id; // Usar el índice actual
     setEvaluatedPetIds(new Set(evaluatedPetIds).add(currentPetId));
 
     try {
       if (status === "like") await setShowLikeAnimation(true);
-      if (status === "dislike") await setShowDislikeAnimation(true);
-      saveUserPetInteraction(status, currentPetId);
+      await saveUserPetInteraction(status, currentPetId);
+
+      setPets((prevPets) => prevPets.filter((pet) => pet.pet_id !== currentPetId));
+      setCurrentPetIndex((prevIndex) => Math.max(0, prevIndex - 1)); // Ajustar el índice
     } catch (error) {
       console.error("Error en la interacción:", error);
     }
   };
 
   const handleSelectPet = (pet: Pet) => {
-    setSelectedPet(pet); // Guardar el objeto pet en el estado global
+    setSelectedPet(pet);
   };
 
   return (
@@ -124,6 +117,7 @@ export default function Find() {
             pets={pets}
             onLoad={() => setIsLoading(false)}
             handleSelectPet={handleSelectPet}
+            setCurrentPetIndex={setCurrentPetIndex} // Pasar setCurrentPetIndex
           />
         ) : (
           <NotFindPets />
@@ -143,7 +137,6 @@ export default function Find() {
         {!isLoading && pets.length > 0 && (
           <Buttons
             onLike={() => handleInteraction("like")}
-            // onDislike={() => handleInteraction("dislike")}
           />
         )}
       </View>

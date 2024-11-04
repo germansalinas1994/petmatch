@@ -21,20 +21,20 @@ import Colors from "@/constants/Colors";
 import UserModal from "@/components/UserModal";
 import { User } from "@/types/index";
 import useUserStore from "@/stores/userStore";
-import { useProtectedRoute } from "@/hooks/useProtectedRoute"; // Importa el hook
-import { RoleCodes } from "@/constants/roles"; // Importa los códigos de roles
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { RoleCodes } from "@/constants/roles";
 
 export default function Likes() {
   useProtectedRoute(RoleCodes.Rescatista);
   
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [noPetsFound, setNoPetsFound] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [petId, setPetId] = useState<string | null>(null);
-  const { idUser} = useUserStore();
+  const { idUser } = useUserStore();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-
 
   useEffect(() => {
     if (!idUser) {
@@ -44,27 +44,22 @@ export default function Likes() {
       return;
     }
 
-    // Obtener el `petId` solo si `idUser` no es null
     const getPetId = async () => {
       try {
-        console.log("idUser:", idUser); // Verificar el idUser en la consola
-
         const petsCollection = collection(db, "pets");
         const petsQuery = query(petsCollection, where("user_id", "==", idUser));
         const petsSnapshot = await getDocs(petsQuery);
 
         if (!petsSnapshot.empty) {
-          const petDoc = petsSnapshot.docs[0]; // Obtiene el primer documento
-          console.log("Pet document data:", petDoc.data());
-          console.log("Pet document ID:", petDoc.id);
-          setPetId(petDoc.id); // Establece el `petId`
+          const petDoc = petsSnapshot.docs[0];
+          setPetId(petDoc.id);
         } else {
-          console.error("No se encontró la mascota para el usuario.");
-          setLoading(false); // Detener la carga si no se encuentra el `petId`
+          setNoPetsFound(true);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error al obtener el petId:", error);
-        setLoading(false); // Detener la carga si ocurre un error
+        setLoading(false);
       }
     };
 
@@ -72,9 +67,8 @@ export default function Likes() {
   }, [idUser]);
 
   useEffect(() => {
-    if (!petId) return; // Espera a que `petId` esté disponible
+    if (!petId) return;
 
-    // Suscripción en tiempo real a `user_pets_likes_dislikes` cuando `petId` está disponible
     const likesCollection = collection(db, "user_pets_likes_dislikes");
     const likesQuery = query(
       likesCollection,
@@ -84,7 +78,6 @@ export default function Likes() {
 
     const unsubscribeLikes = onSnapshot(likesQuery, (likesSnapshot) => {
       const likedUserIds = likesSnapshot.docs.map((doc) => doc.data().user_id);
-      console.log("Liked User IDs:", likedUserIds);
 
       if (likedUserIds.length > 0) {
         const usersCollection = collection(db, "users");
@@ -100,17 +93,16 @@ export default function Likes() {
           })) as User[];
 
           setUsers(usersList);
-          setLoading(false); // Detener la carga cuando los datos estén listos
+          setLoading(false);
         });
 
-        // Limpiar suscripción de `users` al desmontar
         return () => unsubscribeUsers();
       } else {
-        setUsers([]); // Si no hay likes, vacía la lista
-        setLoading(false); // Detener la carga si no hay usuarios que dieron like
+        setUsers([]);
+        setLoading(false);
       }
     });
-    // Limpiar suscripción de `likes` al desmontar
+
     return () => unsubscribeLikes();
   }, [petId]);
 
@@ -142,25 +134,24 @@ export default function Likes() {
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
-    console.log("item", item),
     <View style={styles.userCard}>
       <TouchableOpacity onPress={() => openModal(item)}>
-      <Image
-        source={
-          item.imagen
-            ? { uri: item.imagen }
-            : require('@/assets/images/default_user.jpg')
-        }
-        style={styles.profileImage}
-        onLoad={() => setIsImageLoaded(true)} 
-      />
+        <Image
+          source={
+            item.imagen
+              ? { uri: item.imagen }
+              : require('@/assets/images/default_user.jpg')
+          }
+          style={styles.profileImage}
+          onLoad={() => setIsImageLoaded(true)}
+        />
       </TouchableOpacity>
       <Text style={styles.userName}>{item.nombre}</Text>
     </View>
   );
 
   return (
-    <View>
+    <View style={styles.container}>
       <Header title="Interesados" />
       {loading ? (
         <FlatList
@@ -168,26 +159,34 @@ export default function Likes() {
           renderItem={renderSkeleton}
           keyExtractor={(_, index) => index.toString()}
         />
-      ) : (
-        <View style={styles.container}>
-          <FlatList
-            data={users}
-            renderItem={renderUserItem}
-            keyExtractor={(item) => item.user_id}
-          />
-          <UserModal
-            visible={modalVisible}
-            onClose={closeModal}
-            user={selectedUser || null}
-          />
+      ) : noPetsFound ? (
+        <View style={styles.centeredMessage}>
+          <Text style={styles.messageText}>No tienes mascotas cargadas.</Text>
         </View>
+      ) : users.length === 0 ? (
+        <View style={styles.centeredMessage}>
+  <Text style={styles.messageText}>Tu mascota aún no tiene likes.</Text>
+  </View>
+      ) : (
+        <FlatList
+          data={users}
+          renderItem={renderUserItem}
+          keyExtractor={(item) => item.user_id}
+        />
       )}
+      <UserModal
+        visible={modalVisible}
+        onClose={closeModal}
+        user={selectedUser || null}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    flex: 1, // Asegura que el contenedor ocupe toda la pantalla
+  },
   userCard: {
     flexDirection: "row",
     padding: 10,
@@ -210,5 +209,16 @@ const styles = StyleSheet.create({
   },
   skeletonText: {
     marginLeft: 10,
+  },
+  centeredMessage: {
+    flex: 1, 
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  messageText: {
+    fontSize: 20, 
+    textAlign: "center",
+    color: Colors.text.primary, 
   },
 });
