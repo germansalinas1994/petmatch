@@ -33,7 +33,6 @@ export default function Home() {
     setToken,
     setImagen,
     setIsAuthenticated,
-    setName,
     setEmail,
     setIdUser,
   } = useUserStore();

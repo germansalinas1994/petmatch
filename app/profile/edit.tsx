@@ -32,7 +32,6 @@ export default function EditProfile() {
       if (userSnapshot.exists()) {
         const data = userSnapshot.data();
         setUserData({
-          user_id: userSnapshot.id,
           nombre: data?.nombre || "",
           descripcion: data?.descripcion || "",
           rol_id: data?.rol_id || "",
