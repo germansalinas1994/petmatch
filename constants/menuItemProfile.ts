@@ -7,7 +7,7 @@ export const MenuItemRescatista: MenuItem[] = [
     id: 1,
     name: "Configurar",
     icon: "settings" as keyof typeof Ionicons.glyphMap,
-    path: "/change-profile",
+    path: "/profile/edit",
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ export const MenuItemAdoptante: MenuItem[] = [
     id: 1,
     name: "Configurar",
     icon: "settings" as keyof typeof Ionicons.glyphMap,
-    path: "/change-profile",
+    path: "/profile/edit",
   },
   {
     id: 2,

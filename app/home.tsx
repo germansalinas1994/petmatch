@@ -20,6 +20,7 @@ import Header from "@/components/Header";
 import { useRouter } from "expo-router";
 import { RoleCodes } from "@/constants/roles";
 import { User } from "@/types/index";
+import { set } from "react-hook-form";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -72,41 +73,63 @@ export default function HomeScreen() {
 
       if (userData.rol_id) {
         await searchCodigoRol(userData.rol_id);
-        setRol(userData.rol);
+        setRol(userData.rol_id);
         setName(userData.nombre);
         setDescripcion(userData.descripcion);
+        console.log("User data:", userData);
       }
     }
   };
 
   const getRoles = async () => {
-    const rolesRef = collection(db, "roles");
-    const q = query(rolesRef);
-    const querySnapshot = await getDocs(q);
-    const rolesData = querySnapshot.docs.map((doc) => ({
-      rol_id: doc.id,
-      descripcion: doc.data().descripcion,
-      codigo: doc.data().codigo,
-      ...doc.data(),
-    }));
-    setRoles(rolesData);
+    setIsLoaded(true);
+    try {
+      const rolesRef = collection(db, "roles");
+      const q = query(rolesRef);
+      const querySnapshot = await getDocs(q);
+      const rolesData = querySnapshot.docs.map((doc) => ({
+        rol_id: doc.id,
+        descripcion: doc.data().descripcion,
+        codigo: doc.data().codigo,
+        ...doc.data(),
+      }));
+      setRoles(rolesData);
+    } catch (error) {
+      console.error("Error al obtener los roles", error);
+    } finally {
+      setIsLoaded(false);
+    }
   };
 
   const searchCodigoRol = async (rol_id: string) => {
-    const rolesRef = doc(db, "roles", rol_id);
-    const docSnap = await getDoc(rolesRef);
-    if (docSnap.exists()) {
-      setCodigoRol(docSnap.data().codigo);
-    } else {
-      console.log("No such document!");
+    setIsLoaded(true);
+    try {
+      const rolesRef = doc(db, "roles", rol_id);
+      const docSnap = await getDoc(rolesRef);
+      if (docSnap.exists()) {
+        setCodigoRol(docSnap.data().codigo);
+      } else {
+        console.log("No such document!");
+      }
+    } catch (error) {
+      console.error("Error al obtener el código del rol", error);
+    } finally {
+      setIsLoaded(false);
     }
   };
 
   const updateUserData = async (data: User) => {
-    const userRef = doc(db, "users", idUser || "");
-    await setDoc(userRef, data, { merge: true });
-    setName(data.nombre);
-    setDescripcion(data.descripcion);
+    setIsLoaded(true);
+    try {
+      const userRef = doc(db, "users", idUser || "");
+      await setDoc(userRef, data, { merge: true });
+      setName(data.nombre);
+      setDescripcion(data.descripcion);
+    } catch (error) {
+      console.error("Error al actualizar el usuario", error);
+    } finally {
+      setIsLoaded(false);
+    }
   };
 
   const onSubmit = async (data: User, reset: () => void) => {
