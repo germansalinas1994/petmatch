@@ -1,6 +1,13 @@
 // Profile.tsx
 import React from "react";
-import { SafeAreaView, View, StyleSheet, StatusBar, Platform, Text } from "react-native";
+import {
+  SafeAreaView,
+  View,
+  StyleSheet,
+  StatusBar,
+  Platform,
+  Text,
+} from "react-native";
 import UserProfile from "@/components/profile/UserProfile";
 import ProfileMenu from "@/components/profile/ProfileMenu";
 import useUserStore from "@/stores/userStore";
@@ -8,26 +15,20 @@ import { useAuth0 } from "react-native-auth0";
 import { useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Header from "@/components/Header";
-
-interface MenuItem {
-  id: number;
-  name: string;
-  icon: keyof typeof Ionicons.glyphMap; // Tipamos icon para que solo acepte íconos válidos
-  path: string;
-}
+import {
+  MenuItemAdoptante,
+  MenuItemRescatista,
+} from "@/constants/menuItemProfile";
+import { RoleCodes } from "@/constants/roles";
+import { MenuItem } from "@/types/index";
 
 export default function Profile() {
   const { nombre, imagen, mail, clearUser, codigoRol } = useUserStore();
   const { clearSession } = useAuth0();
   const router = useRouter();
 
-
-
-  const menuItems: MenuItem[] = [
-    { id: 1, name: "Configurar", icon: "settings", path: "/change-profile" },
-    { id: 2, name: "Ver mascotas", icon: "list", path: "/(tabs)/adoptante/find" },
-    { id: 3, name: "Cerrar sesión", icon: "exit", path: "logout" },
-  ];
+  const menuItems: MenuItem[] =
+    codigoRol === RoleCodes.Rescatista ? MenuItemRescatista : MenuItemAdoptante;
 
   const onPressMenu = async (item: any) => {
     if (item.path === "logout") {
@@ -45,13 +46,13 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-        <Header showBackButton={false} title="Perfil" />
-        <UserProfile
-          name={nombre || "No hay nombre disponible"}
-          imageUri={imagen}
-          email={mail || "No hay correo disponible"}
-        />
-        <ProfileMenu menuItems={menuItems} onPressMenu={onPressMenu} />
+      <Header showBackButton={false} title="Perfil" />
+      <UserProfile
+        name={nombre || "No hay nombre disponible"}
+        imageUri={imagen}
+        email={mail || "No hay correo disponible"}
+      />
+      <ProfileMenu menuItems={menuItems} onPressMenu={onPressMenu} />
     </SafeAreaView>
   );
 }
