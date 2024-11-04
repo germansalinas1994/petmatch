@@ -1,4 +1,3 @@
-// Likes.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,7 +11,6 @@ import { db } from "@/config/FirebaseConfig";
 import {
   collection,
   onSnapshot,
-  DocumentData,
   query,
   where,
   getDocs,
@@ -22,33 +20,64 @@ import SkeletonItem from "@/components/SkeletonItem";
 import Colors from "@/constants/Colors";
 import UserModal from "@/components/UserModal";
 import { User } from "@/types/index";
+import useUserStore from "@/stores/userStore";
 
 export default function Likes() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const hardcodedPetId = "2Gedud8sPt2EakcO19Cf";
+  const [petId, setPetId] = useState<string | null>(null);
+  const { idUser } = useUserStore();
 
   useEffect(() => {
-    // Suscripción en tiempo real a `user_pets_likes_dislikes`
+    // Obtener el `petId` al inicio
+    const getPetId = async () => {
+      try {
+        console.log("idUser:", idUser); // Verificar el idUser en la consola
+
+        const petsCollection = collection(db, "pets");
+        const petsQuery = query(petsCollection, where("user_id", "==", idUser)); // Cambiar a "userId"
+        const petsSnapshot = await getDocs(petsQuery);
+
+        if (!petsSnapshot.empty) {
+          petsSnapshot.forEach((doc) => {
+            console.log("Pet document data:", doc.data()); // Log de los datos del documento
+            console.log("Pet document ID:", doc.id); // Log del ID del documento  
+            setPetId(doc.id); // Establecer el petId
+          });
+        } else {
+          console.error("No se encontró la mascota para el usuario.");
+          setLoading(false); // Detener la carga si no se encuentra el petId
+        }
+      } catch (error) {
+        console.error("Error al obtener el petId:", error);
+        setLoading(false); // Detener la carga si ocurre un error
+      }
+    };
+
+    getPetId();
+  }, [idUser]);
+
+  useEffect(() => {
+    if (!petId) return; // Espera a que `petId` esté disponible
+
+    // Suscripción en tiempo real a `user_pets_likes_dislikes` cuando `petId` está disponible
     const likesCollection = collection(db, "user_pets_likes_dislikes");
     const likesQuery = query(
       likesCollection,
-      where("pet_id", "==", hardcodedPetId),
+      where("pet_id", "==", petId),
       where("status", "==", "like")
     );
 
     const unsubscribeLikes = onSnapshot(likesQuery, (likesSnapshot) => {
-      //tiene el id de los usuarios que dieron like
       const likedUserIds = likesSnapshot.docs.map((doc) => doc.data().user_id);
+      console.log("Liked User IDs:", likedUserIds); // Log para verificar los IDs de usuarios que dieron like
 
       if (likedUserIds.length > 0) {
-        // Segunda suscripción en tiempo real a la colección `users`
         const usersCollection = collection(db, "users");
         const userQuery = query(
           usersCollection,
-          //con el __name__ se puede hacer una query con un array de ids
           where("__name__", "in", likedUserIds)
         );
 
@@ -59,20 +88,20 @@ export default function Likes() {
           })) as User[];
 
           setUsers(usersList);
-          setLoading(false);
+          setLoading(false); // Detener la carga cuando los datos estén listos
         });
 
         // Limpiar suscripción de `users` al desmontar
         return () => unsubscribeUsers();
       } else {
         setUsers([]); // Si no hay likes, vacía la lista
-        setLoading(false);
+        setLoading(false); // Detener la carga si no hay usuarios que dieron like
       }
     });
 
     // Limpiar suscripción de `likes` al desmontar
     return () => unsubscribeLikes();
-  }, [hardcodedPetId]);
+  }, [petId]);
 
   const renderSkeleton = () => (
     <View style={styles.userCard}>
@@ -139,8 +168,7 @@ export default function Likes() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-  },
+  container: {},
   userCard: {
     flexDirection: "row",
     padding: 10,

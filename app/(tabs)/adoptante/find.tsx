@@ -27,6 +27,8 @@ import NotFindPets from "@/components/find/NotFindPets";
 import { usePetStore } from "@/stores/petStore";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute"; // Importa el hook
 import { RoleCodes } from "@/constants/roles"; // Importa los códigos de roles
+import useUserStore from "@/stores/userStore";
+
 
 
 export default function Find() {
@@ -35,18 +37,20 @@ export default function Find() {
 
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showDislikeAnimation, setShowDislikeAnimation] = useState(false);
+  const {
+    idUser
+  } = useUserStore(); 
   const [pets, setPets] = useState<Pet[]>([]);
   const [evaluatedPetIds, setEvaluatedPetIds] = useState<Set<string>>(
     new Set()
   );
   const [isLoading, setIsLoading] = useState(true);
-  const hardcodedUserId = "aBzu53nnGyivWW1KDq95";
   const setSelectedPet = usePetStore((state) => state.setSelectedPet);
 
   useEffect(() => {
     const userQuery = query(
       collection(db, "user_pets_likes_dislikes"),
-      where("user_id", "==", hardcodedUserId)
+      where("user_id", "==", idUser)
     );
 
     const unsubscribe = onSnapshot(userQuery, (snapshot) => {
@@ -76,7 +80,7 @@ export default function Find() {
   const saveUserPetInteraction = async (status: string, petId: string) => {
     try {
       await addDoc(collection(db, "user_pets_likes_dislikes"), {
-        user_id: hardcodedUserId,
+        user_id: idUser,
         pet_id: petId,
         status: status,
         createdAt: new Date(),
