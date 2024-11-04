@@ -15,10 +15,16 @@ import Colors from "@/constants/Colors";
 type PetListProps = {
   pets: Pet[];
   onLoad: () => void;
-  handleSelectPet: (pet: Pet) => void; // Nueva prop
+  handleSelectPet: (pet: Pet) => void;
+  setCurrentPetIndex: (index: number) => void; // Nueva prop
 };
 
-export default function PetList({ pets, onLoad, handleSelectPet }: PetListProps) {
+export default function PetList({
+  pets,
+  onLoad,
+  handleSelectPet,
+  setCurrentPetIndex,
+}: PetListProps) {
   return (
     <FlatList
       data={pets}
@@ -26,9 +32,16 @@ export default function PetList({ pets, onLoad, handleSelectPet }: PetListProps)
       pagingEnabled
       scrollEnabled={true}
       showsHorizontalScrollIndicator={false}
+      onViewableItemsChanged={({ viewableItems }) => {
+        if (viewableItems.length > 0) {
+          if (viewableItems[0].index !== null) {
+            setCurrentPetIndex(viewableItems[0].index); // Actualiza el índice actual
+          }
+        }
+      }}
       renderItem={({ item }) => (
         <Link
-          onPress={() => handleSelectPet(item)} // Llamada a handleSelectPet
+          onPress={() => handleSelectPet(item)}
           href={{
             pathname: "/pet-details/[petId]",
             params: { petId: item.pet_id },
@@ -42,7 +55,9 @@ export default function PetList({ pets, onLoad, handleSelectPet }: PetListProps)
               onLoad={onLoad}
             />
             <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>{item.nombre}, {item.edad} años</Text>
+              <Text style={styles.infoText}>
+                {item.nombre}, {item.edad} años
+              </Text>
             </View>
           </Pressable>
         </Link>
@@ -74,7 +89,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.3)", 
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
     paddingHorizontal: 50,
     paddingVertical: 13,
     alignItems: "center",
@@ -82,7 +97,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: Colors.text.white,
-    fontSize: 22, // Tamaño de texto adecuado para ser legible
+    fontSize: 22,
     fontWeight: "bold",
   },
 });

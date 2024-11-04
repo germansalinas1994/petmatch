@@ -20,7 +20,6 @@ import Header from "@/components/Header";
 import { useRouter } from "expo-router";
 import { RoleCodes } from "@/constants/roles";
 import { User } from "@/types/index";
-import { set } from "react-hook-form";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -34,6 +33,7 @@ export default function HomeScreen() {
     setName,
     setDescripcion,
     setCodigoRol,
+    setImagen,
     codigoRol,
   } = useUserStore();
   const { setRoles, roles } = useRolesStore();
@@ -73,9 +73,12 @@ export default function HomeScreen() {
 
       if (userData.rol_id) {
         await searchCodigoRol(userData.rol_id);
+        
         setRol(userData.rol_id);
         setName(userData.nombre);
         setDescripcion(userData.descripcion);
+        if(userData.imagen)
+          setImagen(userData.imagen);
         console.log("User data:", userData);
       }
     }
