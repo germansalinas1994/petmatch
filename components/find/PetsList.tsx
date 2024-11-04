@@ -34,7 +34,9 @@ export default function PetList({
       showsHorizontalScrollIndicator={false}
       onViewableItemsChanged={({ viewableItems }) => {
         if (viewableItems.length > 0) {
-          setCurrentPetIndex(viewableItems[0].index); // Actualiza el índice actual
+          if (viewableItems[0].index !== null) {
+            setCurrentPetIndex(viewableItems[0].index); // Actualiza el índice actual
+          }
         }
       }}
       renderItem={({ item }) => (
