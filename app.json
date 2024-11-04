@@ -8,7 +8,9 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "resizeMode": "contain",
+      "image": "./assets/images/splash.png"
     },
     "ios": {
       "supportsTablet": true,
@@ -41,6 +43,13 @@
             "useFrameworks": "static"
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermision": "Select and upload iamges.",
+          "cameraPermission": "Allow petmach to access your camera."
+        }
       ]
     ],
     "experiments": {
@@ -57,7 +66,6 @@
     },
     "updates": {
       "url": "https://u.expo.dev/9bc6ac50-0b8d-423d-b55f-753bf8bb020c"
-    },
-    "sdkVersion": "51.0.0"
+    }
   }
 }

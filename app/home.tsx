@@ -33,6 +33,7 @@ export default function HomeScreen() {
     setName,
     setDescripcion,
     setCodigoRol,
+    setImagen,
     codigoRol,
   } = useUserStore();
   const { setRoles, roles } = useRolesStore();
@@ -76,6 +77,8 @@ export default function HomeScreen() {
         setRol(userData.rol_id);
         setName(userData.nombre);
         setDescripcion(userData.descripcion);
+        if(userData.imagen)
+          setImagen(userData.imagen);
         console.log("User data:", userData);
       }
     }
