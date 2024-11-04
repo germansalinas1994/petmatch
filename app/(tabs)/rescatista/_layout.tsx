@@ -5,7 +5,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "@/constants/Colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-export default function TabLayout() {
+export default function TabLayoutRescatista() {
   const { width, height } = Dimensions.get("window");
 
   return (
