@@ -21,8 +21,12 @@ import Colors from "@/constants/Colors";
 import UserModal from "@/components/UserModal";
 import { User } from "@/types/index";
 import useUserStore from "@/stores/userStore";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute"; // Importa el hook
+import { RoleCodes } from "@/constants/roles"; // Importa los códigos de roles
 
 export default function Likes() {
+  useProtectedRoute(RoleCodes.Rescatista);
+  
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -31,24 +35,30 @@ export default function Likes() {
   const { idUser } = useUserStore();
 
   useEffect(() => {
-    // Obtener el `petId` al inicio
+    if (!idUser) {
+      setPetId(null);
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+
+    // Obtener el `petId` solo si `idUser` no es null
     const getPetId = async () => {
       try {
         console.log("idUser:", idUser); // Verificar el idUser en la consola
 
         const petsCollection = collection(db, "pets");
-        const petsQuery = query(petsCollection, where("user_id", "==", idUser)); // Cambiar a "userId"
+        const petsQuery = query(petsCollection, where("user_id", "==", idUser));
         const petsSnapshot = await getDocs(petsQuery);
 
         if (!petsSnapshot.empty) {
-          petsSnapshot.forEach((doc) => {
-            console.log("Pet document data:", doc.data()); // Log de los datos del documento
-            console.log("Pet document ID:", doc.id); // Log del ID del documento  
-            setPetId(doc.id); // Establecer el petId
-          });
+          const petDoc = petsSnapshot.docs[0]; // Obtiene el primer documento
+          console.log("Pet document data:", petDoc.data());
+          console.log("Pet document ID:", petDoc.id);
+          setPetId(petDoc.id); // Establece el `petId`
         } else {
           console.error("No se encontró la mascota para el usuario.");
-          setLoading(false); // Detener la carga si no se encuentra el petId
+          setLoading(false); // Detener la carga si no se encuentra el `petId`
         }
       } catch (error) {
         console.error("Error al obtener el petId:", error);
@@ -72,7 +82,7 @@ export default function Likes() {
 
     const unsubscribeLikes = onSnapshot(likesQuery, (likesSnapshot) => {
       const likedUserIds = likesSnapshot.docs.map((doc) => doc.data().user_id);
-      console.log("Liked User IDs:", likedUserIds); // Log para verificar los IDs de usuarios que dieron like
+      console.log("Liked User IDs:", likedUserIds);
 
       if (likedUserIds.length > 0) {
         const usersCollection = collection(db, "users");
@@ -135,7 +145,6 @@ export default function Likes() {
       <TouchableOpacity onPress={() => openModal(item)}>
         <Image uri={item.imagen || ""} style={styles.profileImage} />
       </TouchableOpacity>
-
       <Text style={styles.userName}>{item.nombre}</Text>
     </View>
   );
