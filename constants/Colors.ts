@@ -9,7 +9,7 @@ export default {
     dark: "#643131", // Dark color for background
     primaryButton: "#A68B76", // Primary color for buttons
     secondaryButton: "#7E6959",
-  
+    gray: "#767676",
     clearGray: "#F5F5F5",
 
   },

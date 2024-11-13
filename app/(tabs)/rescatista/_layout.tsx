@@ -21,6 +21,15 @@ export default function TabLayoutRescatista() {
         }}
       />
       <Tabs.Screen
+        name="newPet"
+        options={{
+          title: "Agregar Mascota",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="add-circle" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Perfil",

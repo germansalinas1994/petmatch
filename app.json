@@ -57,10 +57,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": "9bc6ac50-0b8d-423d-b55f-753bf8bb020c"
+        "projectId": "abeecef0-3ba5-49fa-a2cb-1c1a67216de7"
       }
     },
-    "owner": "gsalinas1994",
+    "owner": "tomaspipolo1",
     "runtimeVersion": {
       "policy": "appVersion"
     },
