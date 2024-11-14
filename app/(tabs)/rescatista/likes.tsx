@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import Header from "@/components/Header";
 import { db } from "@/config/FirebaseConfig";
 import {
   collection,
@@ -152,7 +151,6 @@ export default function Likes() {
 
   return (
     <View style={styles.container}>
-      <Header title="Interesados" />
       {loading ? (
         <FlatList
           data={Array(10).fill({})}
