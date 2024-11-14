@@ -1,12 +1,13 @@
 import { Stack, useRouter } from "expo-router";
 import { useFonts } from "expo-font";
-import LoadingIndicator from "../components/Loading"; 
+import LoadingIndicator from "../components/Loading";
 import { Auth0Provider } from "react-native-auth0";
 import FlashMessage from "react-native-flash-message";
 import { View } from "react-native";
 import { useEffect } from "react";
 import useUserStore from "@/stores/userStore";
 import { RoleCodes } from "@/constants/roles";
+import Header from "@/components/Header";
 
 export default function RootLayout() {
   const router = useRouter();
@@ -36,8 +37,18 @@ export default function RootLayout() {
     <Auth0Provider domain={domain} clientId={clientID}>
       <View style={{ flex: 1 }}>
         <RoleRedirect codigoRol={codigoRol != null ? codigoRol : ""} router={router} />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+
+          }}>
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: true,
+              header: () => <Header />,
+            }}
+          />
         </Stack>
         <FlashMessage position="top" />
       </View>

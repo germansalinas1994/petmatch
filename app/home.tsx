@@ -16,7 +16,6 @@ import LoadingIndicator from "@/components/Loading";
 import Form from "@/components/profile/UserForm";
 import { showMessage } from "react-native-flash-message";
 import useRolesStore from "@/stores/rolesStore";
-import Header from "@/components/Header";
 import { useRouter } from "expo-router";
 import { RoleCodes } from "@/constants/roles";
 import { User } from "@/types/index";
@@ -176,7 +175,6 @@ export default function HomeScreen() {
         <LoadingIndicator />
       ) : showRoleForm ? (
         <>
-          <Header title="Registro de usuario" />
           <Form
             onSubmit={onSubmit}
             roles={roles}
