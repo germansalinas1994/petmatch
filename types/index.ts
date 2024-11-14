@@ -9,6 +9,7 @@ export interface User {
     imagen?: string;
     localidad: string;
     descripcion: string;
+    telefono: string;
     edad: number;
     rol_id: string;
     createdAt: Date;
@@ -24,6 +25,7 @@ export interface User {
     images: string[];
     user_id: string;
     direccion: string;
+    telefono: string;
     descripcion: string;
   }
   

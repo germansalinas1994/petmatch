@@ -1,17 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { RadioButton, TextInput, HelperText } from "react-native-paper";
 import SkeletonItem from "@/components/SkeletonItem";
 import Colors from "@/constants/Colors";
-import {User} from "@/types/index";
-
+import { User } from "@/types/index";
 
 interface FormProps {
   onSubmit: (data: User, reset: () => void) => void;
-  roles: { rol_id: string; descripcion: string }[];
+  roles: { rol_id: string; descripcion: string; telefono: string }[];
   isLoading: boolean;
-  defaultValues?: User; 
+  defaultValues?: User;
 }
 
 export default function UserForm({
@@ -20,6 +19,7 @@ export default function UserForm({
   isLoading,
   defaultValues,
 }: FormProps) {
+  console.log("Default Values en UserForm:", defaultValues);
   const {
     control,
     handleSubmit,
@@ -30,8 +30,18 @@ export default function UserForm({
       nombre: "",
       descripcion: "",
       rol_id: "",
+      telefono: "",
     },
   });
+
+  useEffect(() => {
+    reset({
+      nombre: defaultValues?.nombre || "",
+      descripcion: defaultValues?.descripcion || "",
+      rol_id: defaultValues?.rol_id || "",
+      telefono: defaultValues?.telefono || "",
+    });
+  }, [defaultValues, reset]);
 
   if (isLoading) {
     return (
@@ -94,6 +104,32 @@ export default function UserForm({
       />
       {errors.descripcion?.message && (
         <HelperText type="error">{errors.descripcion.message}</HelperText>
+      )}
+
+       {/* Número de Teléfono */}
+       <Text style={styles.label}>Número de Teléfono</Text>
+      <Controller
+        control={control}
+        name="telefono"
+        rules={{
+          pattern: {
+            value: /^[0-9]+$/,
+            message: "El número de teléfono debe contener solo dígitos",
+          },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={styles.input}
+            onChangeText={onChange}
+            value={value !== undefined ? value : ""}
+            mode="outlined"
+            keyboardType="phone-pad"
+            error={!!errors.telefono}
+          />
+        )}
+      />
+      {errors.telefono?.message && (
+        <HelperText type="error">{errors.telefono.message}</HelperText>
       )}
 
       {/* Prioridad con RadioButton */}

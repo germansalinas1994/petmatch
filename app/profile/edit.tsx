@@ -35,6 +35,7 @@ export default function EditProfile() {
           nombre: data?.nombre || "",
           descripcion: data?.descripcion || "",
           rol_id: data?.rol_id || "",
+          telefono: data?.telefono || "",
         } as User);
       } else {
         showMessage({
