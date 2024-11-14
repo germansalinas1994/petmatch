@@ -9,7 +9,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 interface PetFormData {
     id: string;
     nombre: string;
-    descripcion: string;
+    description: string;
     direccion: string;
     edad: number;
     tipo: string;
@@ -35,12 +35,13 @@ export default function Form({
     } = useForm<PetFormData>({
         defaultValues: defaultValues || {
             nombre: "",
-            descripcion: "",
+            description: "",
             direccion: "",
             edad: 0,
             tipo: "",
             peso: 0,
             sexo: "",
+            images: [],
         },
     });
 
@@ -50,6 +51,9 @@ export default function Form({
             scrollEnabled={true}
             keyboardShouldPersistTaps="handled"
         >
+            <View style={styles.logoContainer}>
+                <Image source={require("@/assets/images/logo.png")} style={{ width: 200, height: 200, alignSelf: "center" }} />
+            </View>
             <View style={styles.inputContainer}>
                 <Text style={styles.title}>Cargar una Mascota</Text>
 
@@ -83,13 +87,12 @@ export default function Form({
                             name="tipo"
                             rules={{ required: "El tipo es obligatorio" }}
                             render={({ field: { onChange, value } }) => (
-                                <TextInput
-                                    style={styles.input}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    mode="outlined"
-                                    error={!!errors.tipo}
-                                />
+                                <RadioButton.Group onValueChange={onChange} value={value}>
+                                    <View style={styles.radioContainer}>
+                                        <RadioButton.Item label="Perro" value="Perro" />
+                                        <RadioButton.Item label="Gato" value="Gato" />
+                                    </View>
+                                </RadioButton.Group>
                             )}
                         />
                         {errors.tipo?.message && (
@@ -102,7 +105,7 @@ export default function Form({
                 <Text style={styles.label}>Descripción *</Text>
                 <Controller
                     control={control}
-                    name="descripcion"
+                    name="description"
                     rules={{ required: "La descripción es obligatoria" }}
                     render={({ field: { onChange, value } }) => (
                         <TextInput
@@ -110,13 +113,13 @@ export default function Form({
                             onChangeText={onChange}
                             value={value}
                             mode="outlined"
-                            error={!!errors.descripcion}
+                            error={!!errors.description}
                             multiline
                         />
                     )}
                 />
-                {errors.descripcion?.message && (
-                    <HelperText type="error">{errors.descripcion.message}</HelperText>
+                {errors.description?.message && (
+                    <HelperText type="error">{errors.description.message}</HelperText>
                 )}
 
                 {/* Dirección y Sexo */}
@@ -170,6 +173,10 @@ export default function Form({
                         <Controller
                             control={control}
                             name="edad"
+                            rules={{
+                                validate: (value) =>
+                                    !isNaN(value) && value >= 0 || "Edad inválida",
+                            }}
                             render={({ field: { onChange, value } }) => (
                                 <TextInput
                                     style={styles.input}
@@ -181,6 +188,9 @@ export default function Form({
                                 />
                             )}
                         />
+                        {errors.edad && (
+                            <HelperText type="error">{errors.edad.message}</HelperText>
+                        )}
                     </View>
 
                     <View style={styles.halfInputContainer}>
@@ -212,11 +222,18 @@ export default function Form({
                         <View>
                             <View style={styles.imagePreviewContainer}>
                                 {value && value.map((imageUri, index) => (
-                                    <Image
-                                        key={index}
-                                        source={{ uri: imageUri }}
-                                        style={styles.imagePreview}
-                                    />
+                                    <View key={index} style={styles.imageItem}>
+                                        <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                                        <TouchableOpacity
+                                            style={styles.deleteButton}
+                                            onPress={() => {
+                                                const updatedImages = value.filter((_, i) => i !== index);
+                                                onChange(updatedImages);
+                                            }}
+                                        >
+                                            <Text style={styles.deleteButtonText}>X</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 ))}
                             </View>
 
@@ -331,4 +348,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         margin: 5,
     },
+    logoContainer:{
+        alignContent: "center",
+    }
 });

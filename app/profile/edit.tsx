@@ -9,7 +9,7 @@ import { showMessage } from "react-native-flash-message";
 import useRolesStore from "@/stores/rolesStore";
 import useUserStore from "@/stores/userStore";
 import { User } from "@/types/index";
-
+import Header from "@/components/Header";
 
 export default function EditProfile() {
   const { userId } = useLocalSearchParams();
@@ -96,6 +96,7 @@ export default function EditProfile() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header showBackButton={true} title="Editar perfil" />
       <UserForm
         onSubmit={handleUpdateUser}
         roles={roles}
