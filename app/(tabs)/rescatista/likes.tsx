@@ -187,7 +187,11 @@ export default function Likes() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+<<<<<<< HEAD
     paddingTop: 20, // Asegura que el contenedor ocupe toda la pantalla
+=======
+    paddingTop: 40, 
+>>>>>>> b8fb1dca59a0eee7814c2189bc602651f2d3ffa3
   },
   userCard: {
     flexDirection: "row",
