@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import SkeletonItem from './SkeletonItem';
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
+import SkeletonItem from "./SkeletonItem";
 import { Image } from "react-native-expo-image-cache";
-import { User } from '@/types/index';
+import { User } from "@/types/index";
+import { FontAwesome } from "@expo/vector-icons";
 
 type UserModalProps = {
   visible: boolean;
   onClose: () => void;
   user: User | null;
-
 };
 
 export default function UserModal({ visible, onClose, user }: UserModalProps) {
@@ -22,6 +29,17 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
   }, [user]);
 
   if (!user) return null;
+
+  // Función para manejar la apertura de WhatsApp
+  const handleWhatsAppPress = () => {
+    let phoneNumber = user.telefono;
+    // Removemos caracteres no numéricos
+    phoneNumber = phoneNumber.replace(/\D/g, "");
+    const url = `https://wa.me/${phoneNumber}`;
+    Linking.openURL(url).catch((err) =>
+      console.error("Error al abrir WhatsApp", err)
+    );
+  };
 
   return (
     <Modal
@@ -38,7 +56,7 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
               <SkeletonItem width={100} height={100} borderRadius={50} />
             )}
             <Image
-              uri={user.imagen || ''}
+              uri={user.imagen || ""}
               style={styles.userImage}
               onLoad={() => setImageLoading(false)}
               transitionDuration={300} // Añadir una transición suave
@@ -47,6 +65,14 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
 
           <Text style={styles.modalTitle}>Nombre</Text>
           <Text style={styles.modalText}>{user.nombre}</Text>
+
+          <Text style={styles.modalTitle}>Teléfono</Text>
+          <TouchableOpacity
+            style={styles.whatsappButton}
+            onPress={handleWhatsAppPress}
+          >
+            <FontAwesome name="whatsapp" size={30} color="#25D366" />
+          </TouchableOpacity>
 
           <View style={styles.row}>
             <View style={styles.column}>
@@ -76,75 +102,80 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: 300,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   imageContainer: {
     width: 100,
     height: 100,
     marginBottom: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   userImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    position: 'absolute',
+    position: "absolute",
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 10,
   },
   modalText: {
     fontSize: 14,
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     marginBottom: 10,
   },
   column: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   descriptionBox: {
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   descriptionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 5,
   },
   closeButton: {
     marginTop: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#f44336',
+    backgroundColor: "#f44336",
     borderRadius: 5,
   },
   closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 16,
+  },
+  whatsappButton: {
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
