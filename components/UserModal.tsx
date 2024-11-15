@@ -67,12 +67,15 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
           <Text style={styles.modalText}>{user.nombre}</Text>
 
           <Text style={styles.modalTitle}>Teléfono</Text>
-          <TouchableOpacity
-            style={styles.whatsappButton}
-            onPress={handleWhatsAppPress}
-          >
-            <FontAwesome name="whatsapp" size={30} color="#25D366" />
-          </TouchableOpacity>
+          <View style={styles.phoneContainer}>
+            <Text style={styles.phoneText}>{user.telefono}</Text>
+            <TouchableOpacity
+              style={styles.whatsappButton}
+              onPress={handleWhatsAppPress}
+            >
+              <FontAwesome name="whatsapp" size={24} color="#25D366" />
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.row}>
             <View style={styles.column}>
@@ -173,9 +176,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  whatsappButton: {
-    marginBottom: 10,
+  phoneContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  phoneText: {
+    fontSize: 14,
+  },
+  whatsappButton: {
+    marginLeft: 10,
   },
 });
