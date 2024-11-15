@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity, Button } from "react-native";
 import Colors from "@/constants/Colors";
 
+
 interface CardPetProps {
     name: string;
     address: string;
@@ -13,27 +14,29 @@ interface CardPetProps {
 
 const CardPet: React.FC<CardPetProps> = ({ name, address, type, image, onEdit, onDelete }) => {
     return (
-        <View style={styles.cardContainer}>
-            {image && <Image source={{ uri: image }} style={styles.image} />}
-            <View style={styles.infoContainer}>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Nombre:</Text>
-                    <Text style={styles.value}>{name}</Text>
+
+            <View style={styles.cardContainer}>
+                {image && <Image source={{ uri: image }} style={styles.image} />}
+                <View style={styles.infoContainer}>
+                    <View style={styles.infoRow}>
+                        <Text style={styles.label}>Nombre:</Text>
+                        <Text style={styles.value}>{name}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <Text style={styles.label}>Dirección:</Text>
+                        <Text style={styles.value}>{address}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <Text style={styles.label}>Tipo:</Text>
+                        <Text style={styles.value}>{type}</Text>
+                    </View>
                 </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Dirección:</Text>
-                    <Text style={styles.value}>{address}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Tipo:</Text>
-                    <Text style={styles.value}>{type}</Text>
+                <View style={styles.buttonContainer}>
+                    <Button title="Editar" onPress={onEdit} color={Colors.background.primaryButton} />
+                    <Button title="Eliminar" onPress={onDelete} color={Colors.background.secondaryButton} />
                 </View>
             </View>
-            <View style={styles.buttonContainer}>
-                <Button title="Editar" onPress={onEdit} color={Colors.background.primaryButton} />
-                <Button title="Eliminar" onPress={onDelete} color={Colors.background.secondaryButton} />
-            </View>
-        </View>
+
     );
 };
 
@@ -50,8 +53,8 @@ const styles = StyleSheet.create({
         elevation: 3,
         margin: 16,
         alignSelf: "center",
-        width: "100%",
-        maxWidth: 400,
+        width: "90%",
+        maxWidth: 350,
     },
     image: {
         width: "100%",
@@ -81,4 +84,5 @@ const styles = StyleSheet.create({
         paddingBottom: 36,
         paddingHorizontal: 50,
     },
+    
 });

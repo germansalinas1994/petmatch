@@ -23,6 +23,8 @@ import useUserStore from "@/stores/userStore";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { RoleCodes } from "@/constants/roles";
 
+
+
 export default function Likes() {
   useProtectedRoute(RoleCodes.Rescatista);
   
@@ -179,6 +181,7 @@ export default function Likes() {
       />
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({
@@ -219,4 +222,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: Colors.text.primary, 
   },
+  
 });
