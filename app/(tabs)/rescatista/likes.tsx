@@ -186,7 +186,8 @@ export default function Likes() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Asegura que el contenedor ocupe toda la pantalla
+    flex: 1,
+    paddingTop: 40, 
   },
   userCard: {
     flexDirection: "row",

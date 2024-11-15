@@ -11,7 +11,7 @@ export const MenuItemRescatista: MenuItem[] = [
   },
   {
     id: 2,
-    name: "Mis mascotas",
+    name: "Interesados",
     icon: "list" as keyof typeof Ionicons.glyphMap,
     path: "/(tabs)/rescatista/likes",
   },
