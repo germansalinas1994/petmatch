@@ -9,6 +9,7 @@ interface UserStore {
   mail: string | null;
   descripcion: string | null;
   telefono: string | null;
+  localidad: string | null;
   imagen: string | null;
   id_rol: string | null;
   codigoRol: string | null;
@@ -18,6 +19,7 @@ interface UserStore {
   setEmail: (email: string) => void;
   setDescripcion: (descripcion: string) => void;
   setTelefono: (telefono: string) => void;
+  setLocalidad: (localidad: string) => void;
   setImagen: (imagen: string) => void;
   setName: (name: string) => void;
   setRol: (rol: string) => void;
@@ -34,6 +36,7 @@ const useUserStore = create<UserStore>((set, get) => ({
   imagen: null,
   descripcion: null,
   telefono: null,
+  localidad: null,
   isAuthenticated: false,
   nombre: null,
   id_rol: null,
@@ -61,6 +64,8 @@ const useUserStore = create<UserStore>((set, get) => ({
 
   setTelefono: (telefono: string) => set({telefono}),
 
+  setLocalidad: (localidad: string) => set({localidad}),
+
   setName: (nombre: string) => set({ nombre }),
 
   // Función para limpiar el estado (logout)
@@ -75,6 +80,7 @@ const useUserStore = create<UserStore>((set, get) => ({
     codigoRol: null,
     descripcion: null,
     telefono: null,
+    localidad: null,
   }),
 
   // Función para validar el token globalmente
