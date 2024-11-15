@@ -11,6 +11,7 @@ import { useAuth0 } from "react-native-auth0";
 import { useRouter } from "expo-router";
 import { MenuItemAdoptante, MenuItemRescatista } from "@/constants/menuItemProfile";
 import { RoleCodes } from "@/constants/roles";
+import Header from "@/components/Header";
 
 export default function Profile() {
   const { nombre, imagen, mail, clearUser, codigoRol, idUser, setImagen } = useUserStore();
@@ -72,6 +73,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header showBackButton={false} title="Perfil" />
       <UserProfile
         name={nombre || "No hay nombre disponible"}
         imageUri={imagen}

@@ -9,6 +9,7 @@ import userStore from "@/stores/userStore";
 import { showMessage } from "react-native-flash-message";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import { Pet } from "@/types/index";
+import Header from "@/components/Header";
 
 export default function AddPet() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -161,6 +162,7 @@ export default function AddPet() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header title="Mascota" />
       {isEditing ? (
         <FormEdit
           petData={petData}

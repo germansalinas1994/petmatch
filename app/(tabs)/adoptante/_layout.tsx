@@ -33,7 +33,7 @@ export default function TabLayoutAdoptante() {
         options={{
           title: "Perfil",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-circle" size={28} color={color} />
+            <Ionicons name="person" size={28} color={color} />
           ),
         }}
       />

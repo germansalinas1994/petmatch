@@ -26,6 +26,7 @@ import { usePetStore } from "@/stores/petStore";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { RoleCodes } from "@/constants/roles";
 import useUserStore from "@/stores/userStore";
+import Header from "@/components/Header";
 
 export default function Find() {
   useProtectedRoute(RoleCodes.Adoptante);
@@ -105,6 +106,7 @@ export default function Find() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      
       <View style={styles.container}>
         {isLoading ? (
           <SkeletonItem

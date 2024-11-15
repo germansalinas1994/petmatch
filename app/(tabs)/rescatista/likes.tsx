@@ -22,6 +22,7 @@ import { User } from "@/types/index";
 import useUserStore from "@/stores/userStore";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { RoleCodes } from "@/constants/roles";
+import Header from "@/components/Header";
 
 
 
@@ -153,6 +154,7 @@ export default function Likes() {
 
   return (
     <View style={styles.container}>
+      <Header title="Interesados" />
       {loading ? (
         <FlatList
           data={Array(10).fill({})}
@@ -187,7 +189,7 @@ export default function Likes() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 40, 
+    paddingTop: 25, 
   },
   userCard: {
     flexDirection: "row",

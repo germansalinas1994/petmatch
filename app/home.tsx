@@ -19,6 +19,7 @@ import useRolesStore from "@/stores/rolesStore";
 import { useRouter } from "expo-router";
 import { RoleCodes } from "@/constants/roles";
 import { User } from "@/types/index";
+import Header from "@/components/Header";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -175,6 +176,7 @@ export default function HomeScreen() {
         <LoadingIndicator />
       ) : showRoleForm ? (
         <>
+        <Header title="Registo de usuario" ></Header>
           <Form
             onSubmit={onSubmit}
             roles={roles}
