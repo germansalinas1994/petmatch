@@ -22,6 +22,9 @@ import { User } from "@/types/index";
 import useUserStore from "@/stores/userStore";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { RoleCodes } from "@/constants/roles";
+import Header from "@/components/Header";
+
+
 
 export default function Likes() {
   useProtectedRoute(RoleCodes.Rescatista);
@@ -151,6 +154,7 @@ export default function Likes() {
 
   return (
     <View style={styles.container}>
+      <Header title="Interesados" />
       {loading ? (
         <FlatList
           data={Array(10).fill({})}
@@ -179,11 +183,13 @@ export default function Likes() {
       />
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Asegura que el contenedor ocupe toda la pantalla
+    flex: 1,
+    paddingTop: 25,
   },
   userCard: {
     flexDirection: "row",
@@ -219,4 +225,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: Colors.text.primary, 
   },
+  
 });

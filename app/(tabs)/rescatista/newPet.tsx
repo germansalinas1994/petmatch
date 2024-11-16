@@ -2,28 +2,22 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet, Platform, StatusBar, View } from "react-native";
 import Form from "@/components/pet-details/Form";
 import CardPet from "@/components/pet-details/CardPet";
+import FormEdit from "@/components/pet-details/FormEdit";
 import { db } from "@/config/FirebaseConfig";
-import { doc, collection, setDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
+import { doc, collection, setDoc, getDocs, deleteDoc, query, where, updateDoc } from "firebase/firestore";
 import userStore from "@/stores/userStore";
 import { showMessage } from "react-native-flash-message";
 import LoadingIndicator from "@/components/LoadingIndicator";
-
-interface PetFormData {
-  nombre: string;
-  description: string;
-  direccion: string;
-  edad: number;
-  tipo: string;
-  peso: number;
-  sexo: string;
-  images: string[];
-}
+import { Pet } from "@/types/index";
+import Header from "@/components/Header";
 
 export default function AddPet() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [petData, setPetData] = useState<PetFormData | null>(null);
+  const [petData, setPetData] = useState<Pet | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const { validToken, idUser } = userStore();
+
 
   useEffect(() => {
     if (idUser) {
@@ -38,7 +32,7 @@ export default function AddPet() {
       const querySnapshot = await getDocs(petsQuery);
       if (!querySnapshot.empty) {
         const petDoc = querySnapshot.docs[0];
-        setPetData({ id: petDoc.id, ...petDoc.data() } as PetFormData);
+        setPetData({ id: petDoc.id, ...petDoc.data() } as Pet);
       } else {
         setPetData(null);
       }
@@ -48,6 +42,7 @@ export default function AddPet() {
       setIsLoading(false);
     }
   };
+
 
   const handleDeletePet = async () => {
     if (petData && petData.id) {
@@ -59,7 +54,7 @@ export default function AddPet() {
           description: "La mascota ha sido eliminada correctamente.",
           type: "success",
         });
-        setPetData(null); // Restablece petData para mostrar el formulario
+        setPetData(null); // Reset petData to show the form
       } catch (error) {
         console.error("Error al eliminar la mascota:", error);
         showMessage({
@@ -73,7 +68,12 @@ export default function AddPet() {
     }
   };
 
-  const onSubmit = async (data: PetFormData, reset: () => void) => {
+
+  const handleEditPet = () => {
+    setIsEditing(true);
+  };
+
+  const onSubmit = async (data: Pet, reset: () => void) => {
     if (!idUser || !validToken()) {
       showMessage({
         message: "Error",
@@ -100,12 +100,55 @@ export default function AddPet() {
       });
 
       reset();
-      fetchPetData(); // Refresca los datos de la mascota después de guardarla
+      fetchPetData(); 
     } catch (error) {
       console.error("Error al guardar la mascota:", error);
       showMessage({
         message: "Error",
         description: "Hubo un error al guardar la mascota.",
+        type: "danger",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle saving updated pet data
+  const onSave = async (data: Pet, reset: () => void) => {
+    if (!idUser || !validToken() || !petData?.id) {
+      showMessage({
+        message: "Error",
+        description: "No se pudo obtener el ID del usuario o de la mascota.",
+        type: "danger",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const petRef = doc(db, "pets", petData.id); 
+      const updatedPet = {
+        ...data,
+        user_id: idUser,
+        images: data.images ?? [], 
+      };
+
+      await updateDoc(petRef, updatedPet); 
+
+      showMessage({
+        message: "Éxito",
+        description: "La mascota ha sido actualizada correctamente.",
+        type: "success",
+      });
+
+      reset(); 
+      fetchPetData(); 
+      setIsEditing(false); 
+    } catch (error) {
+      console.error("Error al actualizar la mascota:", error);
+      showMessage({
+        message: "Error",
+        description: "Hubo un error al actualizar la mascota.",
         type: "danger",
       });
     } finally {
@@ -119,19 +162,38 @@ export default function AddPet() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {petData ? (
-        <CardPet
-          name={petData.nombre}
-          address={petData.direccion}
-          type={petData.tipo}
-          image={petData.images && petData.images.length > 0 ? petData.images[0] : undefined}
-          onEdit={() => {}}
-          onDelete={handleDeletePet}
-        />
+      <Header title="Mascota" />
+      {isEditing ? (
+        <FormEdit
+          petData={petData}
+          onClose={() => setIsEditing(false)}
+          handleSave={(data: Pet) => {
+
+            onSave(data, () => {
+              
+              fetchPetData(); 
+            });
+          } }
+          defaultValues={petData as Pet} onSubmit={function (data: Pet): void {
+            throw new Error("Function not implemented.");
+          } }        />
       ) : (
-        <View>
-          <Form onSubmit={onSubmit} />
-        </View>
+        isLoading ? (
+          <LoadingIndicator />
+        ) : petData ? (
+          <CardPet
+            name={petData.nombre}
+            address={petData.direccion}
+            type={petData.tipo}
+            image={petData.images && petData.images.length > 0 ? petData.images[0] : undefined}
+            onEdit={handleEditPet}
+            onDelete={handleDeletePet}
+          />
+        ) : (
+          <View>
+            <Form onSubmit={onSubmit} />
+          </View>
+        )
       )}
     </SafeAreaView>
   );
@@ -139,7 +201,7 @@ export default function AddPet() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 10,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : "auto",
     flex: 1,
   },
 });

@@ -4,34 +4,25 @@ import { useForm, Controller } from "react-hook-form";
 import { RadioButton, TextInput, HelperText } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import Colors from "@/constants/Colors";
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Pet } from "@/types/index";
 
-interface FormProps {
-    onSubmit: (data: Pet, reset: () => void) => void;
-    defaultValues?: Partial<Pet>;
+interface FormEditProps {
+    onSubmit: (data: Pet) => void;
+    defaultValues: Pet;
+    petData: Pet | null;
+    onClose: () => void; 
+    handleSave: (data: Pet) => void;
 }
 
-export default function Form({
-    onSubmit,
-    defaultValues,
-}: FormProps) {
+export default function FormEdit({ onSubmit, defaultValues, handleSave, onClose }: FormEditProps) {
     const {
         control,
         handleSubmit,
         formState: { errors },
         reset,
     } = useForm<Pet>({
-        defaultValues: defaultValues || {
-            nombre: "",
-            descripcion: "",
-            direccion: "",
-            edad: 0,
-            tipo: "",
-            peso: "0",
-            sexo: "",
-            images: [],
-        },
+        defaultValues,
     });
 
     return (
@@ -41,10 +32,13 @@ export default function Form({
             keyboardShouldPersistTaps="handled"
         >
             <View style={styles.logoContainer}>
-                <Image source={require("@/assets/images/logo.png")} style={{ width: 200, height: 200, alignSelf: "center" }} />
+                <Image
+                    source={require("@/assets/images/logo.png")}
+                    style={{ width: 200, height: 200, alignSelf: "center" }}
+                />
             </View>
             <View style={styles.inputContainer}>
-                <Text style={styles.title}>Cargar una Mascota</Text>
+                <Text style={styles.title}>Editar Mascota</Text>
 
                 {/* Nombre y Tipo */}
                 <View style={styles.row}>
@@ -208,7 +202,6 @@ export default function Form({
                     </View>
                 </View>
 
-
                 {/* Imágenes */}
                 <Text style={styles.label}>Imágenes</Text>
                 <Controller
@@ -256,15 +249,27 @@ export default function Form({
                     )}
                 />
 
-                {/* Botón de envío */}
-                <TouchableOpacity
-                    onPress={handleSubmit((data) => onSubmit(data, reset))}
-                    style={styles.submitButton}
-                >
-                    <Text style={styles.buttonText}>
-                        {defaultValues ? "Actualizar Mascota" : "Guardar Mascota"}
-                    </Text>
-                </TouchableOpacity>
+                {/* Botones de Cancelar y Actualizar */}
+                <View style={styles.buttonContainer}>
+                    {/* Botón de Cancelar */}
+                    <TouchableOpacity
+                        onPress={onClose}
+                        style={[styles.submitButton, { backgroundColor: Colors.background.secondaryButton }]}
+                    >
+                        <Text style={styles.buttonText}>Cancelar</Text>
+                    </TouchableOpacity>
+
+                    {/* Botón de Actualizar */}
+                    <TouchableOpacity
+                        onPress={handleSubmit((data) => {
+                            handleSave(data);
+                            reset(); 
+                        })}
+                        style={styles.submitButton}
+                    >
+                        <Text style={styles.buttonText}>Actualizar Mascota</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </KeyboardAwareScrollView>
     );
@@ -296,7 +301,6 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: Colors.background.paper,
         fontFamily: "outfit",
-
     },
     descriptionInput: {
         height: 100,
@@ -311,10 +315,9 @@ const styles = StyleSheet.create({
         fontFamily: "outfit",
         padding: 1,
     },
-
     submitButton: {
         padding: 8,
-        width: "40%",
+        width: "45%",
         alignSelf: "center",
         marginTop: 10,
         borderRadius: 10,
@@ -326,6 +329,11 @@ const styles = StyleSheet.create({
         color: Colors.text.white,
         fontSize: 16,
         fontFamily: "outfit-medium",
+    },
+    buttonContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 20,
     },
     imagePickerButton: {
         backgroundColor: Colors.background.default,
