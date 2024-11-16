@@ -49,17 +49,7 @@ export default function Header({ showBackButton = false, title }: HeaderProps) {
           )}
         </View>
 
-        {/* Mostrar la imagen solo si no hay un título */}
-        {!title && (
-          <Image
-            source={
-              imagen
-                ? { uri: imagen }
-                : require("../assets/images/default_user.jpg")
-            }
-            style={styles.profileImage}
-          />
-        )}
+
       </View>
       <Divider />
     </SafeAreaView>
@@ -69,15 +59,10 @@ export default function Header({ showBackButton = false, title }: HeaderProps) {
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: Colors.background.clearGray,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 10, // Ajuste para Android
   },
   container: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 5,
   },
   backIcon: {
   },
@@ -101,11 +86,5 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-medium",
     fontSize: 23,
     color: Colors.text.primary,
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginTop: 10,
   },
 });

@@ -82,10 +82,6 @@ export default function UserModal({ visible, onClose, user }: UserModalProps) {
               <Text style={styles.modalTitle}>Localidad</Text>
               <Text style={styles.modalText}>{user.localidad}</Text>
             </View>
-            <View style={styles.column}>
-              <Text style={styles.modalTitle}>Edad</Text>
-              <Text style={styles.modalText}>{user.edad} años</Text>
-            </View>
           </View>
 
           <View style={styles.descriptionBox}>

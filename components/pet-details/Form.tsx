@@ -310,11 +310,12 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         fontFamily: "outfit",
         padding: 1,
+        paddingLeft: 5,
     },
 
     submitButton: {
         padding: 8,
-        width: "40%",
+        width: "50%",
         alignSelf: "center",
         marginTop: 10,
         borderRadius: 10,

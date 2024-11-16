@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, Platform, StatusBar, View } from "react-native";
+import { SafeAreaView, StyleSheet, Platform, StatusBar, View, ScrollView } from "react-native";
 import Form from "@/components/pet-details/Form";
 import CardPet from "@/components/pet-details/CardPet";
 import FormEdit from "@/components/pet-details/FormEdit";
@@ -17,7 +17,6 @@ export default function AddPet() {
   const [petData, setPetData] = useState<Pet | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const { validToken, idUser } = userStore();
-
 
   useEffect(() => {
     if (idUser) {
@@ -43,7 +42,6 @@ export default function AddPet() {
     }
   };
 
-
   const handleDeletePet = async () => {
     if (petData && petData.id) {
       setIsLoading(true);
@@ -67,7 +65,6 @@ export default function AddPet() {
       }
     }
   };
-
 
   const handleEditPet = () => {
     setIsEditing(true);
@@ -163,38 +160,40 @@ export default function AddPet() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="Mascota" />
-      {isEditing ? (
-        <FormEdit
-          petData={petData}
-          onClose={() => setIsEditing(false)}
-          handleSave={(data: Pet) => {
-
-            onSave(data, () => {
-              
-              fetchPetData(); 
-            });
-          } }
-          defaultValues={petData as Pet} onSubmit={function (data: Pet): void {
-            throw new Error("Function not implemented.");
-          } }        />
-      ) : (
-        isLoading ? (
-          <LoadingIndicator />
-        ) : petData ? (
-          <CardPet
-            name={petData.nombre}
-            address={petData.direccion}
-            type={petData.tipo}
-            image={petData.images && petData.images.length > 0 ? petData.images[0] : undefined}
-            onEdit={handleEditPet}
-            onDelete={handleDeletePet}
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        {isEditing ? (
+          <FormEdit
+            petData={petData}
+            onClose={() => setIsEditing(false)}
+            handleSave={(data: Pet) => {
+              onSave(data, () => {
+                fetchPetData(); 
+              });
+            }}
+            defaultValues={petData as Pet} 
+            onSubmit={function (data: Pet): void {
+              throw new Error("Function not implemented.");
+            }}        
           />
         ) : (
-          <View>
-            <Form onSubmit={onSubmit} />
-          </View>
-        )
-      )}
+          isLoading ? (
+            <LoadingIndicator />
+          ) : petData ? (
+            <CardPet
+              name={petData.nombre}
+              address={petData.direccion}
+              type={petData.tipo}
+              image={petData.images && petData.images.length > 0 ? petData.images[0] : undefined}
+              onEdit={handleEditPet}
+              onDelete={handleDeletePet}
+            />
+          ) : (
+            <View>
+              <Form onSubmit={onSubmit} />
+            </View>
+          )
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -203,5 +202,9 @@ const styles = StyleSheet.create({
   safeArea: {
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : "auto",
     flex: 1,
+  },
+  scrollView: {
+    paddingHorizontal: 16,  // Add padding for better spacing
+    paddingBottom: 20,      // Add bottom padding for scroll comfort
   },
 });

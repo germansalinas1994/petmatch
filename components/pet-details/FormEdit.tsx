@@ -316,12 +316,13 @@ const styles = StyleSheet.create({
         padding: 1,
     },
     submitButton: {
-        padding: 8,
-        width: "45%",
+        padding: 7,
+        width: "50%",
         alignSelf: "center",
         marginTop: 10,
         borderRadius: 10,
         backgroundColor: Colors.background.primaryButton,
+        
     },
     buttonText: {
         textAlign: "center",
@@ -334,6 +335,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         marginTop: 20,
+        gap: 10,
     },
     imagePickerButton: {
         backgroundColor: Colors.background.default,
