@@ -27,7 +27,7 @@ export default function PetInfo({ petData }: PetInfoProps) {
           <Text style={styles.petName}>{petData.nombre}</Text>
           <Text style={styles.petAddress}>{petData.direccion}</Text>
         </View>
-        <Entypo name="heart-outlined" size={30} color="black" />
+        {/*<Entypo name="heart-outlined" size={30} color="black" />*/}
       </View>
 
       <View style={styles.petPropertiesContainer}>

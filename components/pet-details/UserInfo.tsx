@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, Pressable,TouchableOpacity,
+  Linking, } from "react-native";
 import Colors from "@/constants/Colors";
-import Icon from "@expo/vector-icons/FontAwesome";
 
 type UserInfoProps = {
   userName: string;
@@ -9,6 +9,7 @@ type UserInfoProps = {
 };
 
 export default function UserInfo({ userName, userImage }: UserInfoProps) {
+  
   return (
     <View style={styles.ownerContainer}>
       <View style={styles.ownerInfo}>
@@ -25,7 +26,8 @@ export default function UserInfo({ userName, userImage }: UserInfoProps) {
           <Text style={styles.ownerLabel}>Dueño</Text>
         </View>
       </View>
-      <Icon name="send" size={24} color={Colors.background.dark} />
+      
+      {/*<Icon name="send" size={24} color={Colors.background.dark} />*/}
     </View>
   );
 }
