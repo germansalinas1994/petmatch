@@ -11,8 +11,7 @@ interface FormProps {
   roles: { 
     rol_id: string;
     descripcion: string; 
-    telefono: string; 
-    localidad: string;
+    codigo: string;
   }[];
   isLoading: boolean;
   defaultValues?: User;

@@ -31,7 +31,7 @@ export default function AddPet() {
       const querySnapshot = await getDocs(petsQuery);
       if (!querySnapshot.empty) {
         const petDoc = querySnapshot.docs[0];
-        setPetData({ id: petDoc.id, ...petDoc.data() } as Pet);
+        setPetData({ pet_id: petDoc.id, ...petDoc.data() } as Pet);
       } else {
         setPetData(null);
       }
@@ -43,10 +43,10 @@ export default function AddPet() {
   };
 
   const handleDeletePet = async () => {
-    if (petData && petData.id) {
+    if (petData && petData.pet_id) {
       setIsLoading(true);
       try {
-        await deleteDoc(doc(db, "pets", petData.id));
+        await deleteDoc(doc(db, "pets", petData.pet_id));
         showMessage({
           message: "Mascota eliminada",
           description: "La mascota ha sido eliminada correctamente.",
@@ -112,7 +112,7 @@ export default function AddPet() {
 
   // Handle saving updated pet data
   const onSave = async (data: Pet, reset: () => void) => {
-    if (!idUser || !validToken() || !petData?.id) {
+    if (!idUser || !validToken() || !petData?.pet_id) {
       showMessage({
         message: "Error",
         description: "No se pudo obtener el ID del usuario o de la mascota.",
@@ -123,7 +123,7 @@ export default function AddPet() {
 
     setIsSubmitting(true);
     try {
-      const petRef = doc(db, "pets", petData.id); 
+      const petRef = doc(db, "pets", petData.pet_id); 
       const updatedPet = {
         ...data,
         user_id: idUser,
